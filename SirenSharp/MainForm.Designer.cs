@@ -45,6 +45,8 @@
             playlistSizeHeader = new ColumnHeader();
             tabControl1 = new TabControl();
             settingsPage = new TabPage();
+            awcNameTextBox = new TextBox();
+            label5 = new Label();
             dlcNameTextBox = new TextBox();
             label4 = new Label();
             fivemResourceNameTextBox = new TextBox();
@@ -56,8 +58,8 @@
             sirenNameTextBox = new TextBox();
             label1 = new Label();
             button1 = new Button();
-            awcNameTextBox = new TextBox();
-            label5 = new Label();
+            label6 = new Label();
+            deleteButton = new Button();
             menuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             settingsPage.SuspendLayout();
@@ -133,13 +135,14 @@
             generateFiveMResourceToolStripMenuItem.Text = "Generate FiveM Resource...";
             generateFiveMResourceToolStripMenuItem.Click += generateFiveMResourceToolStripMenuItem_Click;
             // 
-            // listView1
+            // fileListView
             // 
             fileListView.Columns.AddRange(new ColumnHeader[] { playlistNameHeader, playlistTypeHeader, playlistLengthHeader, playlistSizeHeader });
             fileListView.FullRowSelect = true;
             fileListView.Location = new Point(12, 27);
-            fileListView.Name = "listView1";
-            fileListView.Size = new Size(374, 411);
+            fileListView.MultiSelect = false;
+            fileListView.Name = "fileListView";
+            fileListView.Size = new Size(374, 378);
             fileListView.TabIndex = 1;
             fileListView.UseCompatibleStateImageBehavior = false;
             fileListView.View = View.Details;
@@ -153,18 +156,19 @@
             // playlistTypeHeader
             // 
             playlistTypeHeader.Text = "Type";
-            playlistTypeHeader.Width = 100;
+            playlistTypeHeader.Width = 90;
             // 
             // playlistLengthHeader
             // 
             playlistLengthHeader.Text = "Length";
             playlistLengthHeader.TextAlign = HorizontalAlignment.Right;
-            playlistLengthHeader.Width = 50;
+            playlistLengthHeader.Width = 55;
             // 
             // playlistSizeHeader
             // 
             playlistSizeHeader.Text = "Size";
             playlistSizeHeader.TextAlign = HorizontalAlignment.Right;
+            playlistSizeHeader.Width = 65;
             // 
             // tabControl1
             // 
@@ -176,7 +180,7 @@
             tabControl1.Size = new Size(408, 411);
             tabControl1.TabIndex = 2;
             // 
-            // tabPage1
+            // settingsPage
             // 
             settingsPage.Controls.Add(awcNameTextBox);
             settingsPage.Controls.Add(label5);
@@ -185,18 +189,35 @@
             settingsPage.Controls.Add(fivemResourceNameTextBox);
             settingsPage.Controls.Add(label3);
             settingsPage.Location = new Point(4, 24);
-            settingsPage.Name = "tabPage1";
+            settingsPage.Name = "settingsPage";
             settingsPage.Padding = new Padding(3);
             settingsPage.Size = new Size(400, 383);
             settingsPage.TabIndex = 0;
             settingsPage.Text = "Settings";
             settingsPage.UseVisualStyleBackColor = true;
             // 
-            // textBox4
+            // awcNameTextBox
+            // 
+            awcNameTextBox.Location = new Point(18, 161);
+            awcNameTextBox.Name = "awcNameTextBox";
+            awcNameTextBox.PlaceholderText = "my_sirens";
+            awcNameTextBox.Size = new Size(152, 23);
+            awcNameTextBox.TabIndex = 5;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(18, 143);
+            label5.Name = "label5";
+            label5.Size = new Size(71, 15);
+            label5.TabIndex = 4;
+            label5.Text = "AWC Name:";
+            // 
+            // dlcNameTextBox
             // 
             dlcNameTextBox.Location = new Point(18, 98);
-            dlcNameTextBox.Name = "textBox4";
-            dlcNameTextBox.PlaceholderText = "my_custom_dlc";
+            dlcNameTextBox.Name = "dlcNameTextBox";
+            dlcNameTextBox.PlaceholderText = "dlc_custom_sirens";
             dlcNameTextBox.Size = new Size(152, 23);
             dlcNameTextBox.TabIndex = 3;
             // 
@@ -209,10 +230,10 @@
             label4.TabIndex = 2;
             label4.Text = "DLC Name:";
             // 
-            // textBox3
+            // fivemResourceNameTextBox
             // 
             fivemResourceNameTextBox.Location = new Point(18, 36);
-            fivemResourceNameTextBox.Name = "textBox3";
+            fivemResourceNameTextBox.Name = "fivemResourceNameTextBox";
             fivemResourceNameTextBox.PlaceholderText = "my-custom-sirens";
             fivemResourceNameTextBox.Size = new Size(152, 23);
             fivemResourceNameTextBox.TabIndex = 1;
@@ -226,7 +247,7 @@
             label3.TabIndex = 0;
             label3.Text = "FiveM Resource Name:";
             // 
-            // tabPage2
+            // sirenPage
             // 
             sirenPage.Controls.Add(button2);
             sirenPage.Controls.Add(sirenAudioPathTextBox);
@@ -235,7 +256,7 @@
             sirenPage.Controls.Add(label1);
             sirenPage.Controls.Add(button1);
             sirenPage.Location = new Point(4, 24);
-            sirenPage.Name = "tabPage2";
+            sirenPage.Name = "sirenPage";
             sirenPage.Padding = new Padding(3);
             sirenPage.Size = new Size(400, 383);
             sirenPage.TabIndex = 1;
@@ -252,10 +273,10 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += sirenSaveButton_Clicked;
             // 
-            // textBox2
+            // sirenAudioPathTextBox
             // 
             sirenAudioPathTextBox.Location = new Point(17, 95);
-            sirenAudioPathTextBox.Name = "textBox2";
+            sirenAudioPathTextBox.Name = "sirenAudioPathTextBox";
             sirenAudioPathTextBox.Size = new Size(294, 23);
             sirenAudioPathTextBox.TabIndex = 4;
             // 
@@ -268,10 +289,10 @@
             label2.TabIndex = 3;
             label2.Text = "Audio Path:";
             // 
-            // textBox1
+            // sirenNameTextBox
             // 
             sirenNameTextBox.Location = new Point(17, 32);
-            sirenNameTextBox.Name = "textBox1";
+            sirenNameTextBox.Name = "sirenNameTextBox";
             sirenNameTextBox.Size = new Size(222, 23);
             sirenNameTextBox.TabIndex = 2;
             // 
@@ -294,28 +315,32 @@
             button1.UseVisualStyleBackColor = true;
             button1.Click += sirenAudioBrowseButton_Clicked;
             // 
-            // textBox5
+            // label6
             // 
-            awcNameTextBox.Location = new Point(18, 161);
-            awcNameTextBox.Name = "textBox5";
-            awcNameTextBox.PlaceholderText = "my_sirens";
-            awcNameTextBox.Size = new Size(152, 23);
-            awcNameTextBox.TabIndex = 5;
+            label6.Location = new Point(159, 415);
+            label6.Name = "label6";
+            label6.Size = new Size(227, 19);
+            label6.TabIndex = 3;
+            label6.Text = "0 track(s), Length: 00:00, Size: 0 KB";
+            label6.TextAlign = ContentAlignment.MiddleRight;
             // 
-            // label5
+            // deleteButton
             // 
-            label5.AutoSize = true;
-            label5.Location = new Point(18, 143);
-            label5.Name = "label5";
-            label5.Size = new Size(71, 15);
-            label5.TabIndex = 4;
-            label5.Text = "AWC Name:";
+            deleteButton.Location = new Point(12, 411);
+            deleteButton.Name = "deleteButton";
+            deleteButton.Size = new Size(75, 23);
+            deleteButton.TabIndex = 4;
+            deleteButton.Text = "Delete";
+            deleteButton.UseVisualStyleBackColor = true;
+            deleteButton.Click += deleteButton_Clicked;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(deleteButton);
+            Controls.Add(label6);
             Controls.Add(tabControl1);
             Controls.Add(fileListView);
             Controls.Add(menuStrip1);
@@ -365,5 +390,7 @@
         private Label label3;
         private TextBox awcNameTextBox;
         private Label label5;
+        private Label label6;
+        private Button deleteButton;
     }
 }

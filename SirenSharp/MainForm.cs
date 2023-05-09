@@ -27,6 +27,7 @@ namespace SirenSharp
             settingsPage.Enabled = false;
             sirenPage.Enabled = false;
             fileListView.Enabled = false;
+            deleteButton.Enabled = false;
 
             editToolStripMenuItem.Enabled = false;
             toolsToolStripMenuItem.Enabled = false;
@@ -220,9 +221,20 @@ namespace SirenSharp
 
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (sirens.Count > 0)
+            {
+                var result = MessageBox.Show("There are unsaved sirens. Are you sure you want continue?", "Unsaved Changes", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.No)
+                {
+                    return;
+                }
+            }
+
             awcFile = null;
             awcPath = "";
-            fileListView.Items.Clear();
+            sirens.Clear();
+
+            RefreshListView();
 
             settingsPage.Enabled = true;
             sirenPage.Enabled = false;
@@ -245,7 +257,7 @@ namespace SirenSharp
                 {
                     if (File.Exists(file))
                     {
-                        var siren = new Siren(Path.GetFileNameWithoutExtension(file), file);
+                        var siren = new Siren(Path.GetFileNameWithoutExtension(file).ToLower(), file);
                         sirens.Add(siren);
                     }
                     else
@@ -270,9 +282,15 @@ namespace SirenSharp
                 item.SubItems.Add(HumanReadableBytes(new FileInfo(siren.AudioPath).Length));
                 item.Tag = siren;
             }
+
+            generateFiveMResourceToolStripMenuItem.Enabled = sirens.Count > 0;
+
+            var totalTracksLength = new TimeSpan(sirens.Sum(x => x.Length.Ticks));
+            var totalTracksSize = sirens.Sum(x => new FileInfo(x.AudioPath).Length);
+            label6.Text = $"{sirens.Count} track(s), Length: {totalTracksLength:mm\\:ss}, Size: {HumanReadableBytes(totalTracksSize)}";
         }
 
-        private string HumanReadableBytes(long len)
+        private string HumanReadableBytes(double len)
         {
             string[] sizes = { "B", "KB", "MB", "GB", "TB" };
             int order = 0;
@@ -290,6 +308,7 @@ namespace SirenSharp
             if (fileListView.SelectedItems.Count == 0)
             {
                 currentSiren = null;
+                deleteButton.Enabled = false;
                 sirenPage.Enabled = false;
                 sirenNameTextBox.Text = "";
                 sirenAudioPathTextBox.Text = "";
@@ -300,6 +319,7 @@ namespace SirenSharp
             if (siren != null)
             {
                 currentSiren = siren;
+                deleteButton.Enabled = true;
                 sirenNameTextBox.Text = siren.SirenName;
                 sirenAudioPathTextBox.Text = siren.AudioPath;
 
@@ -314,6 +334,7 @@ namespace SirenSharp
                 MessageBox.Show("Siren Name can't contain spaces (use _ instead)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            sirenNameTextBox.Text = sirenNameTextBox.Text.ToLower();
             currentSiren.SirenName = sirenNameTextBox.Text;
 
             if (currentSiren.AudioPath != sirenAudioPathTextBox.Text)
@@ -368,6 +389,46 @@ namespace SirenSharp
 
         private void generateFiveMResourceToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            var totalTracksSize = sirens.Sum(x => new FileInfo(x.AudioPath).Length);
+            if (totalTracksSize > 16000000)
+            {
+                var result = MessageBox.Show("AWC files over 16MB may not work correctly in FiveM. Are you sure you want to continue?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.No)
+                {
+                    return;
+                }
+            }
+
+            if (fivemResourceNameTextBox.Text.Contains(" "))
+            {
+                MessageBox.Show("FiveM Resource Name can't contain spaces (use - instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!dlcNameTextBox.Text.StartsWith("dlc_"))
+            {
+                MessageBox.Show(@"DLC Name must begin with ""dlc_""", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (dlcNameTextBox.Text.Contains(" "))
+            {
+                MessageBox.Show("DLC Name can't contain spaces (use _ instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (awcNameTextBox.Text.Contains(" "))
+            {
+                MessageBox.Show("AWC Name can't contain spaces (use _ instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (!FilesAreInSameDirectory(sirens.Select(x => x.AudioPath)))
+            {
+                MessageBox.Show("Audio files aren't in the same directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             var folderPath = "";
 
             var cfd = new CommonOpenFileDialog();
@@ -384,26 +445,6 @@ namespace SirenSharp
                 return;
             }
 
-            if (fivemResourceNameTextBox.Text.Contains(" "))
-            {
-                MessageBox.Show("FiveM Resource Name can't contain spaces (use - instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (dlcNameTextBox.Text.Contains(" "))
-            {
-                MessageBox.Show("DLC Name can't contain spaces (use _ instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (awcNameTextBox.Text.Contains(" "))
-            {
-                MessageBox.Show("AWC Name can't contain spaces (use _ instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (!FilesAreInSameDirectory(sirens.Select(x => x.AudioPath)))
-            {
-                MessageBox.Show("Audio files aren't in the same directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
             SirenBuilder.GenerateFiveMResource(folderPath, fivemResourceNameTextBox.Text, awcNameTextBox.Text, dlcNameTextBox.Text, sirens.ToArray());
         }
 
@@ -411,6 +452,17 @@ namespace SirenSharp
         {
             var directories = filePaths.Select(x => Path.GetDirectoryName(x));
             return directories.Distinct().Count() == 1;
+        }
+
+        private void deleteButton_Clicked(object sender, EventArgs e)
+        {
+            if (currentSiren != null)
+            {
+                sirens.Remove(currentSiren);
+                currentSiren = null;
+                deleteButton.Enabled = false;
+                RefreshListView();
+            }
         }
     }
 }
