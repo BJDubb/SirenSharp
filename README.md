@@ -19,7 +19,9 @@ Download latest version from the [releases](https://github.com/BJDubb/SirenSharp
 Unzip the `.rar/.zip` and run `SirenSharp.exe`
 
 
+## Discord
 
+Join the [discord](https://discord.gg/GCMRtBNCXR) or meesage me at BJDubb\# 0001 if you are having any issues.
 
     
 ## Guides
