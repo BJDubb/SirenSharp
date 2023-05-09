@@ -464,5 +464,10 @@ namespace SirenSharp
                 RefreshListView();
             }
         }
+
+        private void aboutToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            new AboutForm().ShowDialog();
+        }
     }
 }
