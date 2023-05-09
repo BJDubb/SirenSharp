@@ -245,7 +245,7 @@ namespace SirenSharp
                 {
                     if (File.Exists(file))
                     {
-                        var siren = new Siren(Path.GetFileNameWithoutExtension(file).ToLower(), file);
+                        var siren = new Siren(Path.GetFileNameWithoutExtension(file), file);
                         sirens.Add(siren);
                     }
                     else
@@ -314,9 +314,6 @@ namespace SirenSharp
                 MessageBox.Show("Siren Name can't contain spaces (use _ instead)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-
-            sirenNameTextBox.Text = sirenNameTextBox.Text.ToLower();
-
             currentSiren.SirenName = sirenNameTextBox.Text;
 
             if (currentSiren.AudioPath != sirenAudioPathTextBox.Text)
@@ -390,11 +387,6 @@ namespace SirenSharp
             if (fivemResourceNameTextBox.Text.Contains(" "))
             {
                 MessageBox.Show("FiveM Resource Name can't contain spaces (use - instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            if (!dlcNameTextBox.Text.StartsWith("dlc_"))
-            {
-                MessageBox.Show(@"DLC Name must start with ""dlc_"".", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
             if (dlcNameTextBox.Text.Contains(" "))
