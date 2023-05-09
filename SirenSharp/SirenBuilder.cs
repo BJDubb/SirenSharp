@@ -130,7 +130,10 @@ namespace SirenSharp
                 awcXml = sr.ReadToEnd();
             }
 
-            File.WriteAllText("C:\\Users\\Beckam\\Downloads\\siren test\\awc.xml", awcXml);
+            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string sirenSharpFolder = Path.Combine(localAppDataPath, "SirenSharp");
+            string awcXmlPath = Path.Combine(sirenSharpFolder, "awc.xml");
+            File.WriteAllText(awcXmlPath, awcXml);
 
             var trimlength = 4;
             var mformat = XmlMeta.GetXMLFormat(awcName + ".awc.xml", out trimlength);
@@ -159,7 +162,11 @@ namespace SirenSharp
             Debug.WriteLine(datXml);
             Debug.WriteLine("------ DAT XML -------");
 
-            File.WriteAllText("C:\\Users\\Beckam\\Downloads\\siren test\\dat.rel.xml", datXml);
+            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string sirenSharpFolder = Path.Combine(localAppDataPath, "SirenSharp");
+            string datXmlPath = Path.Combine(sirenSharpFolder, "dat.rel.xml");
+
+            File.WriteAllText(datXmlPath, datXml);
 
             var nametableText = GenerateNametable(awcName, sirens);
 
@@ -167,7 +174,9 @@ namespace SirenSharp
             Debug.WriteLine(nametableText);
             Debug.WriteLine("------ Nametable -------");
 
-            File.WriteAllText("C:\\Users\\Beckam\\Downloads\\siren test\\rel.nametable", datXml);
+            string datRelPath = Path.Combine(sirenSharpFolder, "rel.nametable");
+
+            File.WriteAllText(datRelPath, datXml);
 
             var trimlength = 4;
             var mformat = XmlMeta.GetXMLFormat("custom_sounds.rel.xml", out trimlength);
