@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 using CodeWalker.GameFiles;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace SirenSharp
 {
@@ -42,11 +36,11 @@ namespace SirenSharp
                     xml.WriteStartElement("Item");
 
                     xml.WriteStartElement("Name");
-                    xml.WriteString(siren.SirenName);
+                    xml.WriteString(siren.SirenName.ToLower());
                     xml.WriteEndElement();
 
                     xml.WriteStartElement("FileName");
-                    xml.WriteString(siren.FileName);
+                    xml.WriteString(siren.FileName.ToLower());
                     xml.WriteEndElement();
 
                     xml.WriteStartElement("Chunks");
@@ -130,8 +124,6 @@ namespace SirenSharp
                 awcXml = sr.ReadToEnd();
             }
 
-            File.WriteAllText("C:\\Users\\Beckam\\Downloads\\siren test\\awc.xml", awcXml);
-
             var trimlength = 4;
             var mformat = XmlMeta.GetXMLFormat(awcName + ".awc.xml", out trimlength);
 
@@ -159,15 +151,11 @@ namespace SirenSharp
             Debug.WriteLine(datXml);
             Debug.WriteLine("------ DAT XML -------");
 
-            File.WriteAllText("C:\\Users\\Beckam\\Downloads\\siren test\\dat.rel.xml", datXml);
-
             var nametableText = GenerateNametable(awcName, sirens);
 
             Debug.WriteLine("------ Nametable -------");
             Debug.WriteLine(nametableText);
             Debug.WriteLine("------ Nametable -------");
-
-            File.WriteAllText("C:\\Users\\Beckam\\Downloads\\siren test\\rel.nametable", datXml);
 
             var trimlength = 4;
             var mformat = XmlMeta.GetXMLFormat("custom_sounds.rel.xml", out trimlength);
