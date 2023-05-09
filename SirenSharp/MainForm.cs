@@ -89,6 +89,15 @@ namespace SirenSharp
             InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel, true);
             InitFileType(".nametable", "Name Table", 5, FileTypeAction.ViewNametable);
             InitFileType(".ypdb", "Pose Matcher Database", 9, FileTypeAction.ViewYpdb, true);
+
+            /* use localappdata for w/e you're doing with these xmls so we stop getting errors. */
+            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string sirenSharpFolder = Path.Combine(localAppDataPath, "SirenSharp");
+
+            if (!Directory.Exists(sirenSharpFolder))
+            {
+                Directory.CreateDirectory(sirenSharpFolder);
+            }
         }
 
         private void InitFileType(string ext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex, bool xmlConvertible = false)
