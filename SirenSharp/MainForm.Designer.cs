@@ -38,6 +38,8 @@
             importToolStripMenuItem = new ToolStripMenuItem();
             toolsToolStripMenuItem = new ToolStripMenuItem();
             generateFiveMResourceToolStripMenuItem = new ToolStripMenuItem();
+            aboutToolStripMenuItem = new ToolStripMenuItem();
+            aboutToolStripMenuItem1 = new ToolStripMenuItem();
             fileListView = new ListView();
             playlistNameHeader = new ColumnHeader();
             playlistTypeHeader = new ColumnHeader();
@@ -60,8 +62,6 @@
             button1 = new Button();
             label6 = new Label();
             deleteButton = new Button();
-            aboutToolStripMenuItem = new ToolStripMenuItem();
-            aboutToolStripMenuItem1 = new ToolStripMenuItem();
             menuStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             settingsPage.SuspendLayout();
@@ -136,6 +136,20 @@
             generateFiveMResourceToolStripMenuItem.Size = new Size(216, 22);
             generateFiveMResourceToolStripMenuItem.Text = "Generate FiveM Resource...";
             generateFiveMResourceToolStripMenuItem.Click += generateFiveMResourceToolStripMenuItem_Click;
+            // 
+            // aboutToolStripMenuItem
+            // 
+            aboutToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutToolStripMenuItem1 });
+            aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            aboutToolStripMenuItem.Size = new Size(52, 20);
+            aboutToolStripMenuItem.Text = "About";
+            // 
+            // aboutToolStripMenuItem1
+            // 
+            aboutToolStripMenuItem1.Name = "aboutToolStripMenuItem1";
+            aboutToolStripMenuItem1.Size = new Size(107, 22);
+            aboutToolStripMenuItem1.Text = "About";
+            aboutToolStripMenuItem1.Click += aboutToolStripMenuItem1_Click;
             // 
             // fileListView
             // 
@@ -336,20 +350,6 @@
             deleteButton.UseVisualStyleBackColor = true;
             deleteButton.Click += deleteButton_Clicked;
             // 
-            // aboutToolStripMenuItem
-            // 
-            aboutToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutToolStripMenuItem1 });
-            aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            aboutToolStripMenuItem.Size = new Size(52, 20);
-            aboutToolStripMenuItem.Text = "About";
-            // 
-            // aboutToolStripMenuItem1
-            // 
-            aboutToolStripMenuItem1.Name = "aboutToolStripMenuItem1";
-            aboutToolStripMenuItem1.Size = new Size(180, 22);
-            aboutToolStripMenuItem1.Text = "About";
-            aboutToolStripMenuItem1.Click += aboutToolStripMenuItem1_Click;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -363,7 +363,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MainMenuStrip = menuStrip1;
             Name = "MainForm";
-            Text = "SirenSharp - v0.2";
+            Text = "SirenSharp - v0.2.1";
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             tabControl1.ResumeLayout(false);

@@ -58,9 +58,9 @@
             label2.AutoSize = true;
             label2.Location = new Point(223, 90);
             label2.Name = "label2";
-            label2.Size = new Size(72, 15);
+            label2.Size = new Size(81, 15);
             label2.TabIndex = 1;
-            label2.Text = "Version: v0.2";
+            label2.Text = "Version: v0.2.1";
             // 
             // label3
             // 

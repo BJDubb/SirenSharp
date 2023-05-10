@@ -149,7 +149,7 @@ namespace SirenSharp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"One of the audio files provided was invalid.\n\n {ex.Message}\n {ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"One of the audio files provided is stereo. Convert this to a mono track to use with GTA V/FiveM.\n\n {ex.Message}\n\n {ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
