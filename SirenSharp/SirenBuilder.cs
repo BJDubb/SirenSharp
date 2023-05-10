@@ -141,7 +141,17 @@ namespace SirenSharp
             var doc = new XmlDocument();
             doc.LoadXml(awcXml);
 
-            byte[] data = XmlMeta.GetData(doc, mformat, wavFolder); // awc file data
+            byte[] data = new byte[] { };
+
+            try
+            {
+                data = XmlMeta.GetData(doc, mformat, wavFolder); // awc file data
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"One of the audio files provided was invalid.\n\n {ex.Message}\n {ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             File.WriteAllBytes(outputPath, data);
         }
@@ -184,16 +194,7 @@ namespace SirenSharp
             var doc = new XmlDocument();
             doc.LoadXml(datXml);
 
-            byte[] data = new byte[] { 0x0 };
-
-            try
-            {
-                data = XmlMeta.GetData(doc, mformat, ""); // rel file data
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"One of the audio files provided was invalid.\n\n {ex.Message}\n {ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            byte[] data = XmlMeta.GetData(doc, mformat, ""); // rel file data
 
             File.WriteAllBytes(Path.Combine(dataDir.FullName, "custom_sounds.dat54.rel"), data); // write rel to disk
 
