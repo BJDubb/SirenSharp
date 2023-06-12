@@ -3,13 +3,13 @@
 
 A FiveM tool for creating server sided sirens.
 
-![image](https://user-images.githubusercontent.com/47697544/237050380-9c8a39cd-b6dd-48a6-a415-4a5e5e977fb7.png)
+![image](https://github.com/BJDubb/SirenSharp/assets/47697544/7c4d7d52-226e-486a-971d-5a449bd11e65)
 
 
 
 ## Credits
 
-Dexyfex for [CodeWalker](https://github.com/dexyfex/CodeWalker)
+@Dexyfex for [CodeWalker](https://github.com/dexyfex/CodeWalker)
 
 
 ## Getting Started
