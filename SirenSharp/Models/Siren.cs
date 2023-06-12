@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NAudio.Wave;
 
-namespace SirenSharp
+namespace SirenSharp.Models
 {
     public class Siren
     {
@@ -32,7 +33,7 @@ namespace SirenSharp
                 Length = wfr.TotalTime;
                 SampleRate = wfr.WaveFormat.SampleRate;
                 int len = (int)wfr.Length;
-                int other = (wfr.WaveFormat.Channels * wfr.WaveFormat.BitsPerSample / 8);
+                int other = wfr.WaveFormat.Channels * wfr.WaveFormat.BitsPerSample / 8;
                 Samples = len / other;
             }
         }

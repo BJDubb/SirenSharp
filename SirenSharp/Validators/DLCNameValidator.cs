@@ -1,0 +1,26 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Controls;
+
+namespace SirenSharp.Validators
+{
+    public class DLCNameValidator : ValidationRule
+    {
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            string sirenName = (string)value;
+
+            if (string.IsNullOrEmpty(sirenName)) return new ValidationResult(false, "Name can't be empty.");
+
+            if (sirenName.Contains(" ")) return new ValidationResult(false, "Name can't include spaces.");
+
+            if (sirenName.Contains("dlc_")) return new ValidationResult(false, "'dlc_' prefix is not needed.");
+
+            return ValidationResult.ValidResult;
+        }
+    }
+}

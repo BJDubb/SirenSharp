@@ -503,7 +503,14 @@ namespace CodeWalker.GameFiles
                 ushort getSample(int i)
                 {
                     var ei = i * 2;
-                    if ((ei + 2) >= pcmData.Length) return 0;
+                    try
+                    {
+                        if ((ei + 2) >= pcmData.Length) return 0;
+                    }
+                    catch (NullReferenceException e)
+                    {
+                        throw new Exception("PCM Data was null");
+                    }
                     var smp = BitConverter.ToInt16(pcmData, i * 2);
                     return (ushort)Math.Min(Math.Abs((int)smp) * 2, 65535);
                 }
@@ -1106,8 +1113,10 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
-                catch
-                { }
+                catch (Exception e)
+                {
+                    throw new Exception($"{e.Message}\nFile: {filename}");
+                }
 
             }
 
@@ -1525,6 +1534,7 @@ namespace CodeWalker.GameFiles
             if (formatcodec != 1)
             {
                 throw new Exception("Only PCM format .wav files supported!");
+                return;
             }
             if (channels != 1)
             {

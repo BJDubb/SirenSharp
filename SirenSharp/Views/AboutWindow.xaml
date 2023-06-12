@@ -1,0 +1,59 @@
+﻿<Window x:Class="SirenSharp.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SirenSharp.Views"
+        mc:Ignorable="d"
+        Title="About" Height="350" Width="550">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="SirenSharp" FontSize="26" FontWeight="SemiBold" TextAlignment="Center" Margin="4"/>
+            <TextBlock Text="Version: v" FontSize="12" TextAlignment="Center" Margin="4" x:Name="versionText"/>
+            <TextBlock Text="Author: BJDubb" FontSize="12" TextAlignment="Center" Margin="4"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <TextBlock Text="GitHub: " FontSize="12" TextAlignment="Center"/>
+                <TextBlock>
+                <Hyperlink NavigateUri="https://github.com/BJDubb/SirenSharp" RequestNavigate="Hyperlink_RequestNavigate">
+                    https://github.com/BJDubb/SirenSharp
+                </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <TextBlock Text="YouTube: " FontSize="12" TextAlignment="Center"/>
+                <TextBlock>
+                <Hyperlink NavigateUri="https://www.youtube.com/@bjdubb" RequestNavigate="Hyperlink_RequestNavigate">
+                    https://www.youtube.com/@bjdubb
+                </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <TextBlock Text="Discord: " FontSize="12" TextAlignment="Center"/>
+                <TextBlock>
+                <Hyperlink NavigateUri="https://discord.gg/GCMRtBNCXR" RequestNavigate="Hyperlink_RequestNavigate">
+                    https://discord.gg/GCMRtBNCXR
+                </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <TextBlock Text="Support Me: " FontSize="12" TextAlignment="Center"/>
+                <TextBlock>
+                <Hyperlink NavigateUri="https://ko-fi.com/bjdubb" RequestNavigate="Hyperlink_RequestNavigate">
+                    https://ko-fi.com/bjdubb
+                </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>

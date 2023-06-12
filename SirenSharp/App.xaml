@@ -1,0 +1,12 @@
+﻿<Application x:Class="SirenSharp.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Startup="OnStartup">
+    <Application.Resources>
+        
+        <!--<DataTemplate DataType="{x:Type viewModel:MainViewModel}">
+            <views:MainWindow />
+        </DataTemplate>-->
+        
+    </Application.Resources>
+</Application>

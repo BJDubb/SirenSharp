@@ -1,0 +1,71 @@
+﻿<UserControl x:Class="SirenSharp.Views.SirenPropertiesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SirenSharp.Views" xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels" xmlns:converters="clr-namespace:SirenSharp.Converters" xmlns:validators="clr-namespace:SirenSharp.Validators"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance viewmodels:MainViewModel}">
+
+    <UserControl.Resources>
+        <converters:NullVisibilityConverter x:Key="nullVisibilityConverter" />
+
+        <Style x:Key="textBoxError" TargetType="{x:Type TextBox}">
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="True">
+                    <Setter Property="Validation.ErrorTemplate">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <StackPanel>
+                                    <Border BorderBrush="Red" BorderThickness="1">
+                                        <AdornedElementPlaceholder x:Name="placeholder"/>
+                                    </Border>
+                                    <TextBlock FontSize="11" FontStyle="Italic" Foreground="Red" Text="{Binding ElementName=placeholder, Path=AdornedElement.(Validation.Errors)/ErrorContent}"/>
+                                </StackPanel>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Validation.ErrorTemplate">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <AdornedElementPlaceholder x:Name="placeholder"/>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Siren Properties" FontSize="14"/>
+        <StackPanel Grid.Row="1" Margin="20 10">
+            <TextBlock Text="Siren Name:" />
+            <TextBox Height="22" Margin="0 10 10 10" 
+                     Width="190" HorizontalAlignment="Left" 
+                     IsEnabled="{Binding CurrentSirenName, Converter={StaticResource nullVisibilityConverter}}" 
+                     Style="{StaticResource textBoxError}" Text="{Binding CurrentSirenName, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Margin="20 10">
+            <TextBlock Text="Siren File:" />
+            <StackPanel Orientation="Horizontal">
+                <TextBox Height="22" Width="190"
+                         Margin="0 10 10 10" IsEnabled="{Binding CurrentSiren, Converter={StaticResource nullVisibilityConverter}}" 
+                          Style="{StaticResource textBoxError}"  Text="{Binding CurrentSirenPath, UpdateSourceTrigger=PropertyChanged}" />
+                <Button Content="Browse..." Height="20" 
+                        Padding="10 0" Command="{Binding BrowseSirenCommand}" 
+                        IsEnabled="{Binding CurrentSiren, Converter={StaticResource nullVisibilityConverter}}"/>
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</UserControl>
