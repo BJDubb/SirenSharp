@@ -26,9 +26,9 @@ Join the [discord](https://discord.gg/GCMRtBNCXR) or meesage me at BJDubb\# 0001
     
 ## Guides
 
-~~Head over to the [Wiki](https://github.com/BJDubb/SirenSharp/wiki/Guides) to learn how to use SirenSharp~~
+Head over to the [docs]([https://github.com/BJDubb/SirenSharp/wiki/Guides](https://docs.sirensharp.dev/overview/what-is-sirensharp)) to learn how to use SirenSharp
 
-Guides yet to be written, refer to [this video](https://youtu.be/oTv3mVHZAK0) for now
+Youtube tutorial [here](https://youtu.be/oTv3mVHZAK0)
 
 
 
