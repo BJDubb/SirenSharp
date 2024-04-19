@@ -42,7 +42,7 @@ namespace SirenSharp.Services
 
                 foreach (var sound in soundSet.Sounds) // copy all files into raw dir to build awc
                 {
-                    File.Copy(sound.AudioPath, $"{awcDir.FullName}/{sound.FileName}");
+                    File.Copy(sound.AudioPath, $"{awcDir.FullName}/{sound.FileName}", true);
                 }
 
                 var awcXml = awcGenerator.GenerateAwcXml(soundSet);
