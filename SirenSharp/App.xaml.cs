@@ -33,6 +33,7 @@ namespace SirenSharp
                 .AddTransient<IAwcGenerator, AwcGenerator>()
                 .AddTransient<IDataGenerator, DataGenerator>()
                 .AddTransient<IResourceGenerator, ResourceGenerator>()
+                .AddTransient<WavFileCleaner>()
                 .AddSingleton<MainViewModel>()
                 .AddSingleton<MainWindow>(services => new MainWindow
                 {

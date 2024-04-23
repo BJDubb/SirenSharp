@@ -16,11 +16,13 @@ namespace SirenSharp.Services
     {
         private readonly IAwcGenerator awcGenerator;
         private readonly IDataGenerator dataGenerator;
+        private readonly WavFileCleaner wavFileCleaner;
 
-        public ResourceGenerator(IAwcGenerator awcGenerator, IDataGenerator dataGenerator)
+        public ResourceGenerator(IAwcGenerator awcGenerator, IDataGenerator dataGenerator, WavFileCleaner wavFileCleaner)
         {
             this.awcGenerator = awcGenerator;
             this.dataGenerator = dataGenerator;
+            this.wavFileCleaner = wavFileCleaner;
         }
 
         public void GenerateResource(string resourceName, string dlcName, string folderPath, List<SoundSet> soundSets)
@@ -42,7 +44,7 @@ namespace SirenSharp.Services
 
                 foreach (var sound in soundSet.Sounds) // copy all files into raw dir to build awc
                 {
-                    File.Copy(sound.AudioPath, $"{awcDir.FullName}/{sound.FileName}", true);
+                    wavFileCleaner.Clean(sound.AudioPath, $"{awcDir.FullName}/{sound.FileName}");
                 }
 
                 var awcXml = awcGenerator.GenerateAwcXml(soundSet);
