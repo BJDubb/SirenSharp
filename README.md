@@ -1,21 +1,39 @@
-# 👋 Welcome to SirenSharp
+﻿
+# SirenSharp
 
-## Quick links
+A FiveM tool for creating server sided sirens.
 
-{% content-ref url="overview/what-is-sirensharp.md" %}
-[what-is-sirensharp.md](overview/what-is-sirensharp.md)
-{% endcontent-ref %}
+![image](https://github.com/BJDubb/SirenSharp/assets/47697544/7c4d7d52-226e-486a-971d-5a449bd11e65)
 
-{% embed url="https://github.com/BJDubb/SirenSharp" %}
 
-{% embed url="https://discord.com/invite/GCMRtBNCXR" %}
 
-{% embed url="https://youtu.be/oTv3mVHZAK0" %}
+## Credits
 
-## Get Started
+@Dexyfex for [CodeWalker](https://github.com/dexyfex/CodeWalker)
 
-We've put together some helpful guides for you to get setup with SirenSharp quickly and easily.
 
-{% content-ref url="getting-started/installing-sirensharp.md" %}
-[installing-sirensharp.md](getting-started/installing-sirensharp.md)
-{% endcontent-ref %}
+## Getting Started
+
+Download latest version from the [releases](https://github.com/BJDubb/SirenSharp/releases/latest) page.
+
+Unzip the `.zip` and run `SirenSharp.exe`
+
+
+## Discord
+
+Join the [discord](https://discord.gg/GCMRtBNCXR) or meesage me at BJDubb\# 0001 if you are having any issues.
+
+    
+## Guides
+
+Head over to the [docs](https://docs.sirensharp.dev/overview/what-is-sirensharp) to learn how to use SirenSharp
+
+Youtube tutorial [here](https://youtu.be/oTv3mVHZAK0)
+
+
+
+## Donate
+
+Donate to help the development of SirenSharp.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/T6T0L425H)
