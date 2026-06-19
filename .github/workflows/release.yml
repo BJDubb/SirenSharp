@@ -42,6 +42,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # gh release view exits non-zero when the release does not exist; under
+          # Actions pwsh that would otherwise fail the step, so don't treat it as fatal.
+          $ErrorActionPreference = 'Continue'
           gh release view "${{ steps.ver.outputs.tag }}" 2>$null | Out-Null
           if ($LASTEXITCODE -eq 0) {
             Write-Host "Release ${{ steps.ver.outputs.tag }} already exists - skipping."
@@ -49,6 +52,7 @@ jobs:
           } else {
             "exists=false" >> $env:GITHUB_OUTPUT
           }
+          exit 0
 
       - name: Publish self-contained single-file
         if: steps.check.outputs.exists == 'false'
