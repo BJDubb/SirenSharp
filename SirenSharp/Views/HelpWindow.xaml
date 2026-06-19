@@ -1,0 +1,47 @@
+<ui:FluentWindow x:Class="SirenSharp.Views.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="SirenSharp Help" Height="560" Width="660"
+        WindowStartupLocation="CenterOwner"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Background="{DynamicResource ApplicationBackgroundBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Help" ShowMaximize="False" ShowMinimize="False" />
+
+        <ScrollViewer Grid.Row="1" Padding="24,8,24,24" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Quick Help" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,12" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,16" LineHeight="22"
+                           Text="SirenSharp converts mono 16-bit PCM WAV files into FiveM server-sided siren resources." />
+
+                <TextBlock Text="WAV requirements" FontWeight="SemiBold" Margin="0,0,0,6" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,16" LineHeight="20" Style="{StaticResource MutedText}"
+                           Text="Mono channel (not stereo), 16-bit PCM encoding. Use Fix Audio in the siren panel if import shows format warnings - or just generate, SirenSharp auto-converts." />
+
+                <TextBlock Text="Sirens work in OpenIV but not in-game?" FontWeight="SemiBold" Margin="0,0,0,6" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,16" LineHeight="20" Style="{StaticResource MutedText}"
+                           Text="With LVC Fleet, disable Local Override in every VCF file and in the in-game O-menu. Verify VCF String/Ref/Bank match your generated soundset names. Run /refresh and ensure the resource is started." />
+
+                <TextBlock Text="AWC hex names in OpenIV" FontWeight="SemiBold" Margin="0,0,0,6" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,16" LineHeight="20" Style="{StaticResource MutedText}"
+                           Text="Hex stream names are normal. Use your string siren names in LVC VCF - not the hex values." />
+
+                <TextBlock Text="Testing before FiveM" FontWeight="SemiBold" Margin="0,0,0,6" />
+                <TextBlock TextWrapping="Wrap" Margin="0,0,0,16" LineHeight="20" Style="{StaticResource MutedText}"
+                           Text="Play source WAVs in-app with the preview buttons. After generation, open CodeWalker RPF Explorer and load the output folder (File &#8594; Open Folder). To confirm playback in-game with no LVC config, tick 'Generate in-game tester' on export and run /sirentest on your server." />
+
+                <TextBlock Margin="0,8,0,0">
+                    <Hyperlink NavigateUri="https://docs.sirensharp.dev" RequestNavigate="Hyperlink_RequestNavigate">Full documentation</Hyperlink>
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</ui:FluentWindow>

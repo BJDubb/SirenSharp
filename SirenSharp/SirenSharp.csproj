@@ -2,24 +2,33 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>sirensharp.ico</ApplicationIcon>
-    <PackageIcon></PackageIcon>
-    <Version>0.3</Version>
+    <Version>0.4</Version>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="sirensharp.ico" />
+    <Resource Include="sirensharp.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="NAudio" Version="2.1.0" />
-    <PackageReference Include="WindowsAPICodePack-Core" Version="1.1.2" />
-    <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="WPF-UI" Version="3.0.5" />
+  </ItemGroup>
+
+  <!-- Embed the FiveM in-game tester template (RageUI + scripts) so the export
+       flow can emit a ready-to-run copy. config.lua is generated per-project. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\fivem-tester\sirensharp-audio-test\**\*.lua;..\fivem-tester\sirensharp-audio-test\**\*.md"
+                      Exclude="..\fivem-tester\sirensharp-audio-test\config.lua">
+      <LogicalName>tester/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

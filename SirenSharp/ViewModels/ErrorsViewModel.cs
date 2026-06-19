@@ -17,11 +17,12 @@ namespace SirenSharp.ViewModels
 
         public IEnumerable GetErrors(string? propertyName)
         {
-            if (propertyName is null) return propertyErrors.First().Value;
-            return propertyErrors.GetValueOrDefault(propertyName);
+            if (propertyName is null)
+                return propertyErrors.Count > 0 ? propertyErrors.First().Value : Enumerable.Empty<string>();
+            return propertyErrors.GetValueOrDefault(propertyName) ?? Enumerable.Empty<string>();
         }
 
-        public void AddError(string errorMessage, [CallerMemberName] string propertyName = null)
+        public void AddError(string errorMessage, [CallerMemberName] string propertyName = "")
         {
             if (!propertyErrors.ContainsKey(propertyName))
             {
@@ -37,7 +38,7 @@ namespace SirenSharp.ViewModels
             ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
         }
 
-        public void ClearErrors([CallerMemberName] string propertyName = null)
+        public void ClearErrors([CallerMemberName] string propertyName = "")
         {
             if (propertyErrors.Remove(propertyName))
             {

@@ -15,12 +15,12 @@ namespace SirenSharp.Models
     public class Project
     {
         [XmlElement("Name")]
-        public string ProjectName { get; set; }
+        public string ProjectName { get; set; } = string.Empty;
         [XmlIgnore]
-        public string ProjectPath { get; set; }
-        
-        public string DLCName { get; set; }
-        public ObservableCollection<SoundSet> SoundSets { get; set; }
+        public string ProjectPath { get; set; } = string.Empty;
+
+        public string DLCName { get; set; } = string.Empty;
+        public ObservableCollection<SoundSet> SoundSets { get; set; } = new();
 
         public Project()
         {
@@ -52,15 +52,14 @@ namespace SirenSharp.Models
 
         public static Project Load(string filePath)
         {
-            Project project;
-
             XmlSerializer serializer = new XmlSerializer(typeof(Project));
-            using (var fs = new FileStream(filePath, FileMode.Open))
-            {
-                project = (Project)serializer.Deserialize(fs);
-            }
+            using var fs = new FileStream(filePath, FileMode.Open);
+
+            if (serializer.Deserialize(fs) is not Project project)
+                throw new InvalidDataException("The selected file is not a valid SirenSharp project.");
 
             project.ProjectPath = filePath;
+            project.SoundSets ??= new ObservableCollection<SoundSet>();
 
             return project;
         }
@@ -121,7 +120,7 @@ namespace SirenSharp.Models
 
             foreach (var soundSet in SoundSets)
             {
-                var validationResult = new AwcNameValidator().Validate(soundSet.Name, null);
+                var validationResult = new AwcNameValidator().ValidateValue(soundSet.Name);
                 if (!validationResult.IsValid) errors.Add($"AWC ({soundSet.Name}): {validationResult.ErrorContent}");
 
                 if (soundSet.Sounds.GroupBy(x => x.Name).Count() != soundSet.Sounds.Count)
@@ -131,11 +130,13 @@ namespace SirenSharp.Models
 
                 foreach (var sound in soundSet.Sounds)
                 {
-                    validationResult = new SirenNameValidator().Validate(sound.Name, null);
+                    validationResult = new SirenNameValidator().ValidateValue(sound.Name);
                     if (!validationResult.IsValid) errors.Add($"Siren ({soundSet.Name}/{sound.Name}): {validationResult.ErrorContent}");
 
-                    validationResult = new AudioFileValidator().Validate(sound.AudioPath, null);
-                    if (!validationResult.IsValid) errors.Add($"Siren ({soundSet.Name}/{sound.Name}): {validationResult.ErrorContent}");
+                    if (string.IsNullOrWhiteSpace(sound.AudioPath) || !File.Exists(sound.AudioPath))
+                    {
+                        errors.Add($"Siren ({soundSet.Name}/{sound.Name}): No WAV file selected or file does not exist");
+                    }
                 }
             }
 

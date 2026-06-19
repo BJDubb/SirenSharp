@@ -9,7 +9,7 @@ using SirenSharp.Models;
 
 namespace SirenSharp.Services
 {
-    public class AwcGenerator : IAwcGenerator
+    public class AwcGenerator
     {
         public string GenerateAwcXml(SoundSet soundSet)
         {

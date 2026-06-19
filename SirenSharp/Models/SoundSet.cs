@@ -15,8 +15,8 @@ namespace SirenSharp.Models
     public class SoundSet : ObservableObject
     {
 
-        public ObservableCollection<Sound> Sounds { get; set; }
-        private string name;
+        public ObservableCollection<Sound> Sounds { get; set; } = new();
+        private string name = string.Empty;
         public string Name
         {
             get => name;

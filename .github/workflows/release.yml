@@ -1,0 +1,75 @@
+name: Release
+
+# When a PR is merged into master, build a self-contained single-file exe,
+# tag it vX.Y (from <Version> in the csproj) and publish a GitHub Release.
+# Re-running for a version that already has a release is a no-op.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Read version from csproj
+        id: ver
+        shell: pwsh
+        run: |
+          [xml]$csproj = Get-Content SirenSharp/SirenSharp.csproj
+          $v = @($csproj.Project.PropertyGroup.Version | Where-Object { $_ })[0]
+          if (-not $v) { Write-Error "No <Version> element found in SirenSharp.csproj"; exit 1 }
+          "version=$v" >> $env:GITHUB_OUTPUT
+          "tag=v$v" >> $env:GITHUB_OUTPUT
+          Write-Host "Detected version $v (tag v$v)"
+
+      - name: Check whether release already exists
+        id: check
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ steps.ver.outputs.tag }}" 2>$null | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release ${{ steps.ver.outputs.tag }} already exists - skipping."
+            "exists=true" >> $env:GITHUB_OUTPUT
+          } else {
+            "exists=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Publish self-contained single-file
+        if: steps.check.outputs.exists == 'false'
+        run: dotnet publish SirenSharp/SirenSharp.csproj -c Release /p:PublishProfile=win-x64
+
+      - name: Package release zip
+        if: steps.check.outputs.exists == 'false'
+        id: pkg
+        shell: pwsh
+        run: |
+          $pub = "SirenSharp/bin/Release/net8.0-windows/win-x64/publish"
+          $zip = "SirenSharp-${{ steps.ver.outputs.tag }}-win-x64.zip"
+          Compress-Archive -Path "$pub/SirenSharp.exe" -DestinationPath $zip -Force
+          "zip=$zip" >> $env:GITHUB_OUTPUT
+          Write-Host "Packaged $zip"
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: SirenSharp ${{ steps.ver.outputs.tag }}
+          generate_release_notes: true
+          files: ${{ steps.pkg.outputs.zip }}

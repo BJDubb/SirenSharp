@@ -490,6 +490,8 @@ namespace CodeWalker.GameFiles
                 //{ }//no hit
 
                 var pcmData = stream.GetPcmData();
+                if (pcmData == null || pcmData.Length == 0)
+                { continue; } // can't build peaks without PCM data
                 var codec = stream.FormatChunk.Codec;
                 var smpCount = stream.FormatChunk.Samples;
                 var peak0 = stream.FormatChunk.PeakVal;//orig value for comparison
@@ -503,14 +505,7 @@ namespace CodeWalker.GameFiles
                 ushort getSample(int i)
                 {
                     var ei = i * 2;
-                    try
-                    {
-                        if ((ei + 2) >= pcmData.Length) return 0;
-                    }
-                    catch (NullReferenceException e)
-                    {
-                        throw new Exception("PCM Data was null");
-                    }
+                    if ((ei + 2) >= pcmData.Length) return 0;
                     var smp = BitConverter.ToInt16(pcmData, i * 2);
                     return (ushort)Math.Min(Math.Abs((int)smp) * 2, 65535);
                 }
@@ -1113,9 +1108,18 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
+                catch (WavImportException wex)
+                {
+                    // Preserve the categorised reason, just attach the file name.
+                    throw wex.WithFile(filename);
+                }
                 catch (Exception e)
                 {
-                    throw new Exception($"{e.Message}\nFile: {filename}");
+                    throw new WavImportException(
+                        WavImportError.FileReadError,
+                        $"Failed to read WAV '{filename}': {e.Message}",
+                        filename,
+                        innerException: e);
                 }
 
             }
@@ -1503,44 +1507,119 @@ namespace CodeWalker.GameFiles
 
         public void ParseWavFile(byte[] wav)
         {
+            const uint TAG_RIFF = 0x46464952; // "RIFF"
+            const uint TAG_WAVE = 0x45564157; // "WAVE"
+            const uint TAG_fmt = 0x20746D66; // "fmt "
+            const uint TAG_data = 0x61746164; // "data"
+
             var ms = new MemoryStream(wav);
             var r = new DataReader(ms);
+
+            if (r.Length < 12)
+            {
+                throw new WavImportException(
+                    WavImportError.FileReadError,
+                    "WAV file is too small or truncated.");
+            }
 
             var RIFF = r.ReadUInt32(); // 0x46464952
             var wavLength = r.ReadInt32();
             var WAVE = r.ReadUInt32(); // 0x45564157
-            var fmt_ = r.ReadUInt32(); // 0x20746D66
-            var fmtLength = r.ReadInt32();
-            var formatcodec = r.ReadInt16();
-            var channels = r.ReadInt16();
-            var sampleRate = r.ReadInt32();
-            var byteRate = r.ReadInt32();
-            var blockAlign = r.ReadInt16();
-            var bitsPerSample = r.ReadInt16();
-            var ext2 = (ushort)0;
-            var samplesPerBlock = (ushort)0;
-            if (fmtLength == 20)
+
+            if (RIFF != TAG_RIFF || WAVE != TAG_WAVE)
             {
-                ext2 = r.ReadUInt16();
-                samplesPerBlock = r.ReadUInt16();
+                throw new WavImportException(
+                    WavImportError.FileReadError,
+                    "File is not a valid RIFF/WAVE file.");
             }
-            var datatag = r.ReadUInt32(); // 0x61746164
-            var datalen = r.ReadInt32();
-            var dataPCM = r.ReadBytes(datalen);
 
-            if (r.Position != r.Length)
-            { }
+            // Real-world WAVs (Audacity, Adobe, NAudio, etc.) may use a fmt chunk of length
+            // 16, 18 (PCM + cbSize) or 40 (WAVE_FORMAT_EXTENSIBLE), and frequently include
+            // extra chunks (LIST/INFO, fact, cue, smpl) between fmt and data. Walk the chunk
+            // list robustly instead of assuming a fixed layout, otherwise a misread chunk
+            // length blows up (e.g. "Stream was too long") or yields a silent AWC.
+            short formatcodec = 0;
+            short channels = 0;
+            int sampleRate = 0;
+            short bitsPerSample = 0;
+            byte[] dataPCM = null;
+            var haveFmt = false;
 
+            while (r.Position + 8 <= r.Length)
+            {
+                var chunkId = r.ReadUInt32();
+                var chunkLen = r.ReadInt32();
+                var chunkStart = r.Position;
+
+                if (chunkLen < 0 || chunkStart + chunkLen > r.Length)
+                {
+                    // Clamp obviously bad/oversized lengths to the remaining bytes.
+                    chunkLen = (int)(r.Length - chunkStart);
+                    if (chunkLen < 0) chunkLen = 0;
+                }
+
+                if (chunkId == TAG_fmt && chunkLen >= 16)
+                {
+                    formatcodec = r.ReadInt16();
+                    channels = r.ReadInt16();
+                    sampleRate = r.ReadInt32();
+                    var byteRate = r.ReadInt32();
+                    var blockAlign = r.ReadInt16();
+                    bitsPerSample = r.ReadInt16();
+
+                    // WAVE_FORMAT_EXTENSIBLE (0xFFFE): the real codec is the first 2 bytes of
+                    // the SubFormat GUID, which sit after cbSize/validBits/channelMask.
+                    if (formatcodec == unchecked((short)0xFFFE) && chunkLen >= 40)
+                    {
+                        r.ReadUInt16(); // cbSize
+                        r.ReadUInt16(); // validBitsPerSample
+                        r.ReadUInt32(); // channelMask
+                        formatcodec = r.ReadInt16(); // SubFormat data1 low word
+                    }
+
+                    haveFmt = true;
+                }
+                else if (chunkId == TAG_data)
+                {
+                    dataPCM = r.ReadBytes(chunkLen);
+                }
+
+                // Advance to the next chunk (chunks are word-aligned: pad to even length).
+                // chunkLen is clamped >= 0 above, and the 8-byte header read each iteration
+                // guarantees forward progress, so this can't loop forever.
+                var next = chunkStart + chunkLen + (chunkLen & 1);
+                if (next < chunkStart) break; // defensive (overflow)
+                r.Position = next;
+            }
+
+            if (!haveFmt)
+            {
+                throw new WavImportException(
+                    WavImportError.FileReadError,
+                    "WAV file is missing its 'fmt ' header chunk.");
+            }
             if (formatcodec != 1)
             {
-                throw new Exception("Only PCM format .wav files supported!");
-                return;
+                throw new WavImportException(
+                    WavImportError.UnsupportedEncoding,
+                    "WAV is not PCM-encoded. Re-export the audio as 16-bit PCM (mono).",
+                    formatCode: formatcodec);
             }
             if (channels != 1)
             {
-                throw new Exception("Only mono .wav files supported!");
+                throw new WavImportException(
+                    WavImportError.UnsupportedChannelCount,
+                    $"WAV has {channels} channels. Only mono is supported - downmix the audio to mono.",
+                    channels: channels);
+            }
+            if (dataPCM == null || dataPCM.Length == 0)
+            {
+                throw new WavImportException(
+                    WavImportError.NoAudioData,
+                    "WAV contains no audio samples.");
             }
 
+            var datalen = dataPCM.Length;
             var sampleCount = datalen * 2; //assume 16bits per sample PCM
 
             var codec = StreamFormat?.Codec ?? FormatChunk?.Codec ?? AwcCodecType.PCM;
