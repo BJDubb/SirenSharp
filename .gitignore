@@ -186,6 +186,8 @@ publish/
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
+# Keep the SirenSharp single-file publish profile tracked
+!SirenSharp/Properties/PublishProfiles/win-x64.pubxml
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
 # checkin your Azure Web App publish settings, but sensitive information contained
@@ -363,3 +365,12 @@ MigrationBackup/
 FodyWeavers.xsd
 .vscode/launch.json
 .vscode/tasks.json
+script_commands.cpp
+docs/discord-support-summary.md
+RELEASE_READINESS_PLAN.md
+
+# SirenSharp project-local converted/temp WAV folders (next to .ssproj)
+*_files/
+
+# Packaged release archives
+SirenSharp-*.zip
