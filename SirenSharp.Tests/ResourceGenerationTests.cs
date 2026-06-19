@@ -104,6 +104,11 @@ namespace SirenSharp.Tests
             Assert.Contains("dlc = 'policesirens'", config);
             Assert.Contains("name = 'lspd'", config);
             Assert.Contains("'wail'", config);
+
+            // RageUI's IsVisible requires a panels callback - omitting it crashes the menu.
+            // Both menu blocks (main + soundset submenu) must supply one.
+            var clientLua = File.ReadAllText(Path.Combine(testerDir, "client.lua"));
+            Assert.Equal(2, System.Text.RegularExpressions.Regex.Matches(clientLua, @"end, function\(Panels\) end\)").Count);
         }
     }
 }

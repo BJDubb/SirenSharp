@@ -88,7 +88,7 @@ function RageUI.PoolMenus:SirenTest()
         for _, soundset in ipairs(Config.Soundsets) do
             Items:AddButton(soundset.name, ('Bank: dlc_%s/%s'):format(soundset.dlc, soundset.name), {}, function() end, SoundsetMenus[soundset.name])
         end
-    end)
+    end, function(Panels) end)
 
     for _, soundset in ipairs(Config.Soundsets) do
         SoundsetMenus[soundset.name]:IsVisible(function(Items)
@@ -101,7 +101,7 @@ function RageUI.PoolMenus:SirenTest()
             Items:AddButton('Stop', 'Stop the sound currently playing.', {}, function(onSelected)
                 if onSelected then stopCurrent() end
             end)
-        end)
+        end, function(Panels) end)
     end
 end
 
