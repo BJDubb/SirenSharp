@@ -1,0 +1,27 @@
+<ui:FluentWindow x:Class="SirenSharp.Views.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="Working…" Height="200" Width="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Background="{DynamicResource ApplicationBackgroundBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Generating resource" ShowMaximize="False" ShowMinimize="False" ShowClose="False" />
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="24">
+            <ui:ProgressRing IsIndeterminate="True" Width="48" Height="48" HorizontalAlignment="Center" />
+            <TextBlock x:Name="StatusText" Text="Starting…" Margin="0,16,0,0"
+                       TextAlignment="Center" TextWrapping="Wrap" MaxWidth="340"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+        </StackPanel>
+    </Grid>
+</ui:FluentWindow>

@@ -1,0 +1,83 @@
+<ui:FluentWindow x:Class="SirenSharp.Views.GenerationResultWindow"
+        x:Name="ResultWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels"
+        xmlns:converters="clr-namespace:SirenSharp.Converters"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        d:DataContext="{d:DesignInstance viewmodels:MainViewModel}"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Generation Result" Height="500" Width="620"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
+        MinHeight="380" MinWidth="520"
+        Loaded="OnLoaded"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Background="{DynamicResource ApplicationBackgroundBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+    <ui:FluentWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="boolToVis" />
+        <converters:CountToVisibilityConverter x:Key="countToVis" />
+    </ui:FluentWindow.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="Generation Result" ShowMaximize="False" ShowMinimize="False" />
+
+        <Grid Grid.Row="1" Margin="24,8,24,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+                <ui:SymbolIcon x:Name="HeaderIcon" FontSize="28" VerticalAlignment="Center" Margin="0,0,12,0" />
+                <TextBlock Text="{Binding LastGenerationTitle}" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" Text="{Binding LastGenerationMessage}" TextWrapping="Wrap" Margin="0,0,0,12"
+                       Style="{StaticResource MutedText}" />
+
+            <!-- Details -->
+            <Border Grid.Row="2" Style="{StaticResource PanelBorder}" Margin="0"
+                    Visibility="{Binding LastGenerationDetails.Count, Converter={StaticResource countToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding LastGenerationDetails}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2"
+                                           FontFamily="Consolas, Cascadia Mono, monospace" FontSize="12" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Actions -->
+            <Grid Grid.Row="3" Margin="0,16,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <WrapPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                           Visibility="{Binding LastGenerationSucceeded, Converter={StaticResource boolToVis}}">
+                    <ui:Button Content="Open Folder" Icon="{ui:SymbolIcon FolderOpen24}" Margin="0,0,6,6"
+                               Command="{Binding OpenOutputFolderCommand}" />
+                    <ui:Button Content="RPF Explorer" Icon="{ui:SymbolIcon Open24}" Margin="0,0,0,6"
+                               Command="{Binding OpenInRpfExplorerCommand}" />
+                </WrapPanel>
+                <ui:Button Grid.Column="1" Content="Close" Appearance="Primary" VerticalAlignment="Center"
+                           Margin="12,0,0,0" MinWidth="90"
+                           IsCancel="True" IsDefault="True" Click="OnClose" />
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

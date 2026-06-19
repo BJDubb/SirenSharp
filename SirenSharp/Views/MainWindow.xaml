@@ -1,142 +1,355 @@
-﻿<Window x:Class="SirenSharp.Views.MainWindow"
+<ui:FluentWindow x:Class="SirenSharp.Views.MainWindow"
+        x:Name="Root"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SirenSharp" xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels" xmlns:converters="clr-namespace:SirenSharp.Converters" xmlns:views="clr-namespace:SirenSharp.Views"
+        xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels"
+        xmlns:converters="clr-namespace:SirenSharp.Converters"
+        xmlns:views="clr-namespace:SirenSharp.Views"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="{Binding WindowTitle}" Height="450" Width="950"
+        Title="{Binding WindowTitle}" Height="660" Width="1160"
+        MinHeight="560" MinWidth="980"
+        WindowStartupLocation="CenterScreen"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Background="{DynamicResource ApplicationBackgroundBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
         d:DataContext="{d:DesignInstance viewmodels:MainViewModel}">
 
-    <Window.Resources>
+    <ui:FluentWindow.Resources>
         <converters:FileSizeConverter x:Key="fileSizeConverter" />
-        <converters:NullVisibilityConverter x:Key="nullVisibilityConverter" />
-    </Window.Resources>
+        <converters:NullToBoolConverter x:Key="nullToBoolConverter" />
+        <converters:NullToVisibilityConverter x:Key="nullToVis" />
+        <converters:CountToVisibilityConverter x:Key="countToVis" />
+        <converters:InverseBoolToVisibilityConverter x:Key="inverseBoolToVis" />
+        <BooleanToVisibilityConverter x:Key="boolToVis" />
+    </ui:FluentWindow.Resources>
 
-    <Window.InputBindings>
+    <ui:FluentWindow.InputBindings>
         <KeyBinding Modifiers="Ctrl" Key="N" Command="{Binding NewProjectCommand}" />
         <KeyBinding Modifiers="Ctrl" Key="O" Command="{Binding OpenProjectCommand}" />
-        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveProjectCommand}"  />
+        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveProjectCommand}" />
         <KeyBinding Modifiers="Ctrl+Shift" Key="S" Command="{Binding SaveProjectAsCommand}" />
-    </Window.InputBindings>
-    
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File">
-                <MenuItem Header="_New Project" InputGestureText="Ctrl+N" Command="{Binding NewProjectCommand}" />
-                <MenuItem Header="_Open Project..." InputGestureText="Ctrl+O" Command="{Binding OpenProjectCommand}"/>
-                <Separator />
-                <MenuItem Header="_Save Project" InputGestureText="Ctrl+S" Command="{Binding SaveProjectCommand}" IsEnabled="{Binding Project, Converter={StaticResource nullVisibilityConverter}}" />
-                <MenuItem Header="Save Project As..." InputGestureText="Ctrl+Shift+S" Command="{Binding SaveProjectAsCommand}" IsEnabled="{Binding Project, Converter={StaticResource nullVisibilityConverter}}"/>
-            </MenuItem>
-            <MenuItem Header="A_WC" IsEnabled="{Binding Project, Converter={StaticResource nullVisibilityConverter}}">
-                <MenuItem Header="_New" Command="{Binding NewAwcCommand}"/>
-            </MenuItem>
-            <MenuItem Header="_Siren" IsEnabled="{Binding CurrentSoundSet, Converter={StaticResource nullVisibilityConverter}}">
-                <MenuItem Header="_New" Command="{Binding NewSirenCommand}"/>
-                <MenuItem Header="_Import WAV..." Command="{Binding ImportWavCommand}"/>
-            </MenuItem>
-            <MenuItem Header="Tools">
-                <MenuItem Header="_Generate FiveM Resource..." Command="{Binding GenerateResourceCommand}" IsEnabled="{Binding CanGenerateResource}" />
-            </MenuItem>
-            <MenuItem Header="_About" Command="{Binding OpenAboutCommand}"/>
-        </Menu>
+    </ui:FluentWindow.InputBindings>
 
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem>
-                <TextBlock Text="{Binding StatusBarText}" Foreground="{Binding StatusBarColor}" />
-            </StatusBarItem>
-        </StatusBar>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-        <Grid>
+        <ui:TitleBar Grid.Row="0" Title="SirenSharp">
+            <ui:TitleBar.Icon>
+                <ui:ImageIcon Source="pack://application:,,,/sirensharp.ico" />
+            </ui:TitleBar.Icon>
+        </ui:TitleBar>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" MaxWidth="200"/>
-                <ColumnDefinition Width="2*" MaxWidth="400"/>
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Padding="10,6" Background="{DynamicResource ControlFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+            <WrapPanel Orientation="Horizontal">
+                <ui:Button Content="New Project" Icon="{ui:SymbolIcon Add24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding NewProjectCommand}" />
+                <ui:Button Content="Open" Icon="{ui:SymbolIcon FolderOpen24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding OpenProjectCommand}" />
+                <ui:Button Content="Save" Icon="{ui:SymbolIcon Save24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding SaveProjectCommand}" IsEnabled="{Binding HasProject}" />
+                <Border CornerRadius="9" Padding="8,2" VerticalAlignment="Center" Margin="0,0,6,0"
+                        Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+                        ToolTip="This project has unsaved changes"
+                        Visibility="{Binding IsDirty, Converter={StaticResource boolToVis}}">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="7" Height="7" VerticalAlignment="Center" Margin="0,0,6,0"
+                                 Fill="{DynamicResource SystemFillColorCautionBrush}" />
+                        <TextBlock Text="Unsaved changes" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+                    </StackPanel>
+                </Border>
+                <Separator Margin="6,0" />
+                <ui:Button Content="Generate Resource" Icon="{ui:SymbolIcon Box24}" Appearance="Primary" Margin="0,0,6,0" Command="{Binding GenerateResourceCommand}" IsEnabled="{Binding CanGenerateResource}" />
+                <ui:Button Content="Open Output" Icon="{ui:SymbolIcon FolderArrowRight24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding OpenOutputFolderCommand}" />
+                <Separator Margin="6,0" />
+                <ui:Button Content="Help" Icon="{ui:SymbolIcon QuestionCircle24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding OpenHelpCommand}" />
+                <ui:Button Content="About" Icon="{ui:SymbolIcon Info24}" Appearance="Secondary" Command="{Binding OpenAboutCommand}" />
+            </WrapPanel>
+        </Border>
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="10*" />
-                <RowDefinition Height="1*" />
-            </Grid.RowDefinitions>
+        <!-- Body -->
+        <Grid Grid.Row="2" Margin="8">
 
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="AWC List" VerticalAlignment="Center" Margin="10"/>
+            <!-- Welcome / empty state -->
+            <Border Style="{StaticResource PanelBorder}"
+                    Visibility="{Binding HasProject, Converter={StaticResource inverseBoolToVis}}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Padding="40" MaxWidth="560">
+                <StackPanel>
+                    <ui:SymbolIcon Symbol="MegaphoneLoud24" FontSize="44" HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                    <TextBlock Text="Welcome to SirenSharp" FontSize="24" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" Margin="0,12,0,0"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    <TextBlock Text="Build server-sided siren packs for FiveM from your WAV files."
+                               TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,20"
+                               Style="{StaticResource MutedText}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:Button Content="New Project" Icon="{ui:SymbolIcon Add24}" Appearance="Primary" Margin="0,0,8,0" Command="{Binding NewProjectCommand}" />
+                        <ui:Button Content="Open Project" Icon="{ui:SymbolIcon FolderOpen24}" Appearance="Secondary" Command="{Binding OpenProjectCommand}" />
+                    </StackPanel>
 
-            <TextBlock Grid.Row="0" Grid.Column="1" Text="Siren List" VerticalAlignment="Center" Margin="10"/>
+                    <StackPanel Margin="0,24,0,0" Visibility="{Binding RecentProjects.Count, Converter={StaticResource countToVis}}">
+                        <TextBlock Text="Recent projects" Style="{StaticResource SectionHeaderText}" />
+                        <ItemsControl ItemsSource="{Binding RecentProjects}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ui:Button Appearance="Secondary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                               Margin="0,0,0,4"
+                                               Command="{Binding DataContext.OpenRecentCommand, ElementName=Root}"
+                                               CommandParameter="{Binding Path}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Path}" FontSize="11" Style="{StaticResource MutedText}" />
+                                        </StackPanel>
+                                    </ui:Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
-            <ListView Grid.Row="1" Grid.Column="0" ItemsSource="{Binding Project.SoundSets}" SelectedItem="{Binding CurrentSoundSet}">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
-                        <GridViewColumn Header="Sirens" DisplayMemberBinding="{Binding Sounds.Count}" />
-                    </GridView>
-                </ListView.View>
-            </ListView>
-
-            <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding CurrentSoundSet.Sounds}" SelectedItem="{Binding CurrentSiren}">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    </Style>
-                </ListView.ItemContainerStyle>
-                
-                <ListView.View>
-                    <GridView>
-                        <GridView.Columns>
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="auto"/>
-                            <GridViewColumn Header="Type" Width="auto">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock>
-                                            <Run Text="{Binding SampleRate}"/>
-                                            <Run Text="Hz"/>
-                                        </TextBlock>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Length" Width="auto">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Length, StringFormat=mm\\:ss}" TextAlignment="Right"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Size" Width="auto">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Size, Converter={StaticResource fileSizeConverter}}" HorizontalAlignment="Stretch" TextAlignment="Right"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView.Columns>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-
-            <Grid Grid.Row="1" Grid.Column="2" Margin="10 0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="2*"/>
-                </Grid.RowDefinitions>
-                <views:AWCPropertiesView Grid.Row="0" />
-                <views:SirenPropertiesView Grid.Row="1" />
-            </Grid>
-
-
-            <Button Grid.Row="2" Grid.Column="0" Content="Delete" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10 0" Padding="12 2" Command="{Binding DeleteAwcCommand}" IsEnabled="{Binding CurrentSoundSet, Converter={StaticResource nullVisibilityConverter}}"/>
-
-            <Grid Grid.Row="2" Grid.Column="1">
+            <!-- Editor -->
+            <Grid Visibility="{Binding HasProject, Converter={StaticResource boolToVis}}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="240" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
-                <Button Content="Delete" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10 0" Padding="12 2" Command="{Binding DeleteSirenCommand}" IsEnabled="{Binding CurrentSiren, Converter={StaticResource nullVisibilityConverter}}"/>
-                <TextBlock Grid.Column="1" Text="{Binding SoundSetInfoText}" HorizontalAlignment="Right" VerticalAlignment="Center" TextAlignment="Right"/>
-            </Grid>
 
+                <!-- Soundsets -->
+                <Border Grid.Column="0" Style="{StaticResource PanelBorder}">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <TextBlock Text="Soundsets" Style="{StaticResource SectionHeaderText}" Margin="0" VerticalAlignment="Center" />
+                            <ui:Button Icon="{ui:SymbolIcon Add24}" Appearance="Secondary" Padding="6" HorizontalAlignment="Right"
+                                       ToolTip="Add soundset" Command="{Binding NewAwcCommand}" IsEnabled="{Binding HasProject}" />
+                        </Grid>
+                        <ui:Button DockPanel.Dock="Bottom" Content="Delete Soundset" Icon="{ui:SymbolIcon Delete24}"
+                                   HorizontalAlignment="Stretch" Margin="0,8,0,0" Appearance="Secondary"
+                                   Command="{Binding DeleteAwcCommand}"
+                                   IsEnabled="{Binding CurrentSoundSet, Converter={StaticResource nullToBoolConverter}}" />
+                        <ListBox ItemsSource="{Binding Project.SoundSets}" SelectedItem="{Binding CurrentSoundSet}"
+                                 Style="{StaticResource CardListBox}" ItemContainerStyle="{StaticResource CardListBoxItem}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="MusicNote224" FontSize="16" Margin="0,0,8,0"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <Border Grid.Column="1" CornerRadius="9" Padding="7,1" VerticalAlignment="Center"
+                                                Background="{DynamicResource SubtleFillColorTertiaryBrush}">
+                                            <TextBlock Text="{Binding Sounds.Count}" FontSize="11"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </Border>
+
+                <!-- Sirens (drop target) -->
+                <Border Grid.Column="1" Style="{StaticResource PanelBorder}" Margin="8,4"
+                        AllowDrop="True" PreviewDragOver="OnDragOver" Drop="OnDrop">
+                    <DockPanel>
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Sirens" Style="{StaticResource SectionHeaderText}" Margin="0" />
+                                <TextBlock Text="Drag &amp; drop WAV files anywhere here, or use Import."
+                                           Style="{StaticResource MutedText}" FontSize="12" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                <ui:Button Content="Add" Icon="{ui:SymbolIcon Add24}" Appearance="Secondary" Margin="0,0,6,0"
+                                           Command="{Binding NewSirenCommand}"
+                                           IsEnabled="{Binding CurrentSoundSet, Converter={StaticResource nullToBoolConverter}}" />
+                                <ui:Button Content="Import WAV" Icon="{ui:SymbolIcon ArrowImport24}" Appearance="Secondary"
+                                           Command="{Binding ImportWavCommand}" IsEnabled="{Binding HasProject}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Border DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                            <TextBlock Text="{Binding SoundSetInfoText}" Style="{StaticResource MutedText}" FontSize="12" />
+                        </Border>
+
+                        <Grid>
+                            <!-- Empty hint when soundset has no sirens -->
+                            <TextBlock Text="No sirens yet - drop WAV files here or click Import WAV."
+                                       Style="{StaticResource MutedText}" TextAlignment="Center" TextWrapping="Wrap"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="320"
+                                       Visibility="{Binding CurrentSoundSet.Sounds.Count, Converter={StaticResource countToVis}, ConverterParameter=invert}" />
+
+                            <ListBox ItemsSource="{Binding CurrentSoundSet.Sounds}" SelectedItem="{Binding CurrentSiren}"
+                                     Style="{StaticResource CardListBox}" ItemContainerStyle="{StaticResource CardListBoxItem}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <ui:Button Grid.Column="0" Icon="{ui:SymbolIcon Play24}" Style="{StaticResource RowIconButton}"
+                                                       Margin="0,0,8,0" ToolTip="Play"
+                                                       Command="{Binding DataContext.PlaySoundCommand, ElementName=Root}"
+                                                       CommandParameter="{Binding}" />
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock FontSize="11" Style="{StaticResource MutedText}">
+                                                    <Run Text="{Binding SampleRate, StringFormat={}{0} Hz, Mode=OneWay}" />
+                                                    <Run Text="·" />
+                                                    <Run Text="{Binding Length, StringFormat=mm\\:ss, Mode=OneWay}" />
+                                                    <Run Text="·" />
+                                                    <Run Text="{Binding Size, Converter={StaticResource fileSizeConverter}, Mode=OneWay}" />
+                                                </TextBlock>
+                                            </StackPanel>
+
+                                            <!-- Format badge -->
+                                            <Border Grid.Column="2" CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Margin="6,0"
+                                                    ToolTip="{Binding FormatStatus}">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="{DynamicResource SystemFillColorCriticalBackgroundBrush}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding FormatState}" Value="Ok">
+                                                                <Setter Property="Background" Value="{DynamicResource SystemFillColorSuccessBackgroundBrush}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding FormatState}" Value="NeedsConversion">
+                                                                <Setter Property="Background" Value="{DynamicResource SystemFillColorCautionBackgroundBrush}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock FontSize="11" FontWeight="SemiBold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Text" Value="No file" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding FormatState}" Value="Ok">
+                                                                    <Setter Property="Text" Value="OK" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding FormatState}" Value="NeedsConversion">
+                                                                    <Setter Property="Text" Value="Needs fix" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <ui:Button Grid.Column="3" Icon="{ui:SymbolIcon Delete24}" Style="{StaticResource RowIconButton}"
+                                                       ToolTip="Delete siren"
+                                                       Command="{Binding DataContext.DeleteSoundCommand, ElementName=Root}"
+                                                       CommandParameter="{Binding}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
+                    </DockPanel>
+                </Border>
+
+                <!-- Inspector -->
+                <Border Grid.Column="2" Style="{StaticResource PanelBorder}">
+                    <Grid>
+                        <!-- Hint -->
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                    Visibility="{Binding ShowInspectorHint, Converter={StaticResource boolToVis}}">
+                            <ui:SymbolIcon Symbol="Cursor24" FontSize="28" HorizontalAlignment="Center"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <TextBlock Text="Select a soundset or siren to edit its details."
+                                       Style="{StaticResource MutedText}" TextWrapping="Wrap" TextAlignment="Center"
+                                       MaxWidth="240" Margin="0,8,0,0" />
+                        </StackPanel>
+
+                        <!-- Soundset inspector -->
+                        <StackPanel Visibility="{Binding ShowSoundSetInspector, Converter={StaticResource boolToVis}}">
+                            <TextBlock Text="Soundset" Style="{StaticResource SectionHeaderText}" />
+                            <TextBlock Text="Name" Style="{StaticResource FieldLabel}" />
+                            <ui:TextBox Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                        Text="{Binding CurrentSoundSetName, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                            <TextBlock Text="{Binding SoundSetInfoText}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <!-- Siren inspector -->
+                        <StackPanel Visibility="{Binding ShowSirenInspector, Converter={StaticResource boolToVis}}">
+                            <TextBlock Text="Siren" Style="{StaticResource SectionHeaderText}" />
+
+                            <TextBlock Text="Name" Style="{StaticResource FieldLabel}" />
+                            <ui:TextBox Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                        Text="{Binding CurrentSirenName, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+
+                            <TextBlock Text="WAV File" Style="{StaticResource FieldLabel}" Margin="0,12,0,4" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Grid.Column="0" Margin="0,0,8,0"
+                                            Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                                            Text="{Binding CurrentSirenPath, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                                <ui:Button Grid.Column="1" Content="Browse" VerticalAlignment="Top" Command="{Binding BrowseSirenCommand}" />
+                            </Grid>
+
+                            <!-- Format warning -->
+                            <Border CornerRadius="6" Padding="10" Margin="0,12,0,0"
+                                    Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+                                    Visibility="{Binding CurrentSiren.NeedsConversion, Converter={StaticResource boolToVis}}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding CurrentSiren.FormatStatus}" Style="{StaticResource WarningText}" />
+                                    <TextBlock Text="Generating auto-converts this, or click Fix Audio now." FontSize="11"
+                                               Style="{StaticResource MutedText}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                    <ui:Button Content="Fix Audio" Icon="{ui:SymbolIcon WrenchScrewdriver24}" Margin="0,8,0,0"
+                                               Command="{Binding FixSirenAudioCommand}" />
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Text="Preview" Style="{StaticResource FieldLabel}" Margin="0,16,0,4" />
+                            <StackPanel Orientation="Horizontal">
+                                <ui:Button Content="Play" Icon="{ui:SymbolIcon Play24}" Margin="0,0,6,0" Command="{Binding PlaySirenCommand}" />
+                                <ui:Button Content="Stop" Icon="{ui:SymbolIcon Stop24}" Command="{Binding StopPreviewCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
-        
-    </DockPanel>
-</Window>
+
+        <!-- Status bar -->
+        <Border Grid.Row="3" Padding="12,6" Background="{DynamicResource ControlFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <TextBlock Text="{Binding StatusBarText}" TextTrimming="CharacterEllipsis">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasValidationError}" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

@@ -1,97 +1,84 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
+using SirenSharp.Validators;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using SirenSharp.Validators;
 
 namespace SirenSharp.ViewModels
 {
     public class NewProjectViewModel : ViewModelBase, INotifyDataErrorInfo
     {
-        private string projectName = string.Empty;
-        private string projectPath;
+        private readonly ErrorsViewModel errorsViewModel = new();
+        private string projectName = "SirenSharpProject1";
+        private string projectPath = string.Empty;
 
         public string ProjectName
         {
             get => projectName;
             set
             {
-                projectName = value;
-
-                errorsViewModel.ClearErrors();
-                var validResult = new ProjectNameValidator().Validate(projectName, null);
-                if (!validResult.IsValid)
-                {
-                    errorsViewModel.AddError(validResult.ErrorContent.ToString());
-                }
-
-                OnPropertyChanged();
+                SetProperty(ref projectName, value);
+                Validate(new ProjectNameValidator().ValidateValue(projectName));
             }
         }
+
         public string ProjectPath
         {
-            get => projectPath; set
-            {
-                projectPath = value;
-                OnPropertyChanged();
-            }
+            get => projectPath;
+            set => SetProperty(ref projectPath, value);
         }
+
         public bool CanCreate => !HasErrors;
 
         public ICommand BrowseCommand { get; }
         public RelayCommand<Window> CreateCommand { get; }
+        public RelayCommand<Window> CancelCommand { get; }
 
         public bool HasErrors => errorsViewModel.HasErrors;
-
-        private ErrorsViewModel errorsViewModel;
-
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
         public NewProjectViewModel()
         {
             BrowseCommand = new RelayCommand(Browse);
             CreateCommand = new RelayCommand<Window>(Create);
+            CancelCommand = new RelayCommand<Window>(Cancel);
 
-            errorsViewModel = new ErrorsViewModel();
-            errorsViewModel.ErrorsChanged += (s, e) =>
+            errorsViewModel.ErrorsChanged += (_, e) =>
             {
                 ErrorsChanged?.Invoke(this, e);
                 OnPropertyChanged(nameof(CanCreate));
             };
 
-            string localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string sirenSharpFolder = Path.Combine(localAppDataPath, "SirenSharp");
+            var localAppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var sirenSharpFolder = Path.Combine(localAppDataPath, "SirenSharp", "Projects");
             Directory.CreateDirectory(sirenSharpFolder);
+            ProjectPath = sirenSharpFolder;
+        }
 
-            ProjectName = "SirenSharpProject1";
-            ProjectPath = Path.Combine(sirenSharpFolder, "Projects");
+        private void Validate(System.Windows.Controls.ValidationResult result)
+        {
+            errorsViewModel.ClearErrors();
+            if (!result.IsValid)
+                errorsViewModel.AddError(result.ErrorContent?.ToString() ?? "Invalid");
+            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(ProjectName)));
+            OnPropertyChanged(nameof(CanCreate));
         }
 
         private void Browse()
         {
-            var cfd = new CommonOpenFileDialog();
-            cfd.IsFolderPicker = true;
-
-            if (cfd.ShowDialog() == CommonFileDialogResult.Ok)
+            var dialog = new OpenFolderDialog
             {
-                ProjectPath = cfd.FileName;
-            }
+                Title = "Select project location",
+                InitialDirectory = Directory.Exists(ProjectPath) ? ProjectPath : string.Empty
+            };
 
-            if (!Directory.Exists(ProjectPath))
-            {
-                return;
-            }
+            if (dialog.ShowDialog() == true)
+                ProjectPath = dialog.FolderName;
         }
 
-        private void Create(Window window)
+        private static void Create(Window? window)
         {
             if (window != null)
             {
@@ -100,9 +87,15 @@ namespace SirenSharp.ViewModels
             }
         }
 
-        public IEnumerable GetErrors(string? propertyName)
+        private static void Cancel(Window? window)
         {
-            return errorsViewModel.GetErrors(propertyName);
+            if (window != null)
+            {
+                window.DialogResult = false;
+                window.Close();
+            }
         }
+
+        public IEnumerable GetErrors(string? propertyName) => errorsViewModel.GetErrors(propertyName);
     }
 }

@@ -1,67 +1,79 @@
-﻿<Window x:Class="SirenSharp.Views.GenerateResourceWindow"
+﻿<ui:FluentWindow x:Class="SirenSharp.Views.GenerateResourceWindow"
         x:Name="GenerateResourceModalWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SirenSharp.Views" xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels" xmlns:validators="clr-namespace:SirenSharp.Validators"
-        mc:Ignorable="d"
-        Title="Generate FiveM Resource" Height="450" Width="800">
-    <Window.DataContext>
-        <viewmodels:GenerateResourceViewModel/>
-    </Window.DataContext>
-
-    <Window.Resources>
-        <Style x:Key="textBoxError" TargetType="{x:Type TextBox}">
-            <Setter Property="Validation.ErrorTemplate">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <StackPanel>
-                            <Border BorderBrush="Red" BorderThickness="1">
-                                <AdornedElementPlaceholder x:Name="placeholder"/>
-                            </Border>
-                            <TextBlock FontSize="11" FontStyle="Italic" Foreground="Red" Text="{Binding ElementName=placeholder, Path=AdornedElement.(Validation.Errors)/ErrorContent}"/>
-                        </StackPanel>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Window.Resources>
-
+        xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="Generate FiveM Resource" Height="460" Width="540"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Background="{DynamicResource ApplicationBackgroundBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="1*" />
-        </Grid.ColumnDefinitions>
-
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="2*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Text="Generate FiveM Resource" FontSize="28" VerticalAlignment="Center" Margin="20 0"/>
+        <ui:TitleBar Grid.Row="0" Title="Generate FiveM Resource" ShowMaximize="False" ShowMinimize="False" />
 
-        <StackPanel Grid.Column="0" Grid.Row="1" VerticalAlignment="Center">
-            <TextBlock Text="Resource Name" Margin="20 0"/>
-            <TextBox Height="22" Margin="20 10" Text="{Binding ResourceName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource textBoxError}"/>
-        </StackPanel>
+        <Grid Grid.Row="1" Margin="24,8,24,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <StackPanel Grid.Column="0" Grid.Row="2" VerticalAlignment="Center">
-            <TextBlock Text="DLC Name" Margin="20 0"/>
-            <TextBox Height="22" Margin="20 10" Text="{Binding DlcName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource textBoxError}"/>
-        </StackPanel>
+            <TextBlock Grid.Row="0" Text="Generate FiveM Resource" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,20" />
 
-        <StackPanel Grid.Column="0" Grid.Row="3" VerticalAlignment="Center">
-            <TextBlock Text="Location" Margin="20 0"/>
-            <StackPanel Orientation="Horizontal">
-                <TextBox Height="22" Width="280" Text="{Binding ResourcePath, UpdateSourceTrigger=PropertyChanged}" Margin="20 10 10 10"/>
-                <Button Content="Browse..." Height="20" Padding="10 0" Command="{Binding BrowseCommand}" IsDefault="True"/>
+            <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                <TextBlock Text="Resource Name" Style="{StaticResource FieldLabel}" />
+                <ui:TextBox Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                            Text="{Binding ResourceName, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
             </StackPanel>
-        </StackPanel>
 
-        <Button Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2" Content="Create" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="15 2" Command="{Binding CreateCommand}" CommandParameter="{Binding ElementName=GenerateResourceModalWindow}" IsDefault="True" IsEnabled="{Binding CanCreate}"/>
+            <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                <TextBlock Text="DLC Name (without dlc_ prefix)" Style="{StaticResource FieldLabel}" />
+                <ui:TextBox Validation.ErrorTemplate="{StaticResource ValidationErrorTemplate}"
+                            Text="{Binding DlcName, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="3" Margin="0,0,0,12">
+                <TextBlock Text="fx_version" Style="{StaticResource FieldLabel}" />
+                <ComboBox ItemsSource="{Binding FxVersionOptions}" SelectedItem="{Binding FxVersion}" HorizontalAlignment="Left" Width="200" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="4" Margin="0,0,0,12">
+                <TextBlock Text="Output Location" Style="{StaticResource FieldLabel}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox Grid.Column="0" Margin="0,0,8,0"
+                                Text="{Binding ResourcePath, UpdateSourceTrigger=PropertyChanged}" />
+                    <ui:Button Grid.Column="1" Content="Browse" Command="{Binding BrowseCommand}" />
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Row="5" Margin="0,0,0,12" VerticalAlignment="Top">
+                <CheckBox Content="Generate in-game tester resource" IsChecked="{Binding GenerateTester}" />
+                <TextBlock Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,4,0,0"
+                           Text="Also writes a 'sirensharp-audio-test' resource next to the output, with an in-game RageUI menu to play these sirens with no LVC config." />
+            </StackPanel>
+
+            <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button Content="Cancel" Margin="0,0,8,0" Appearance="Secondary"
+                           Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=GenerateResourceModalWindow}" IsCancel="True" />
+                <ui:Button Content="Generate" Appearance="Primary"
+                           Command="{Binding CreateCommand}" CommandParameter="{Binding ElementName=GenerateResourceModalWindow}"
+                           IsDefault="True" IsEnabled="{Binding CanCreate}" />
+            </StackPanel>
+        </Grid>
     </Grid>
-</Window>
+</ui:FluentWindow>

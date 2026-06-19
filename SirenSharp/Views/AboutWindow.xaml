@@ -1,59 +1,47 @@
-﻿<Window x:Class="SirenSharp.Views.AboutWindow"
+﻿<ui:FluentWindow x:Class="SirenSharp.Views.AboutWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SirenSharp.Views"
-        mc:Ignorable="d"
-        Title="About" Height="350" Width="550">
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="About SirenSharp" Height="320" Width="360"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica"
+        Background="{DynamicResource ApplicationBackgroundBrush}"
+        Foreground="{DynamicResource TextFillColorPrimaryBrush}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="SirenSharp" FontSize="26" FontWeight="SemiBold" TextAlignment="Center" Margin="4"/>
-            <TextBlock Text="Version: v" FontSize="12" TextAlignment="Center" Margin="4" x:Name="versionText"/>
-            <TextBlock Text="Author: BJDubb" FontSize="12" TextAlignment="Center" Margin="4"/>
-        </StackPanel>
+        <ui:TitleBar Grid.Row="0" Title="About" ShowMaximize="False" ShowMinimize="False" />
 
-        <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel Orientation="Horizontal" Margin="5">
-                <TextBlock Text="GitHub: " FontSize="12" TextAlignment="Center"/>
-                <TextBlock>
-                <Hyperlink NavigateUri="https://github.com/BJDubb/SirenSharp" RequestNavigate="Hyperlink_RequestNavigate">
-                    https://github.com/BJDubb/SirenSharp
-                </Hyperlink>
+        <StackPanel Grid.Row="1" Margin="24,8,24,20" VerticalAlignment="Center">
+            <ui:SymbolIcon Symbol="MegaphoneLoud24" FontSize="32" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+            <TextBlock Text="SirenSharp" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,6,0,0" />
+            <TextBlock x:Name="versionText" Text="Version: v" HorizontalAlignment="Center" Margin="0,2"
+                       FontSize="12" Style="{StaticResource MutedText}" />
+            <TextBlock Text="by BJDubb" HorizontalAlignment="Center" Margin="0,0,0,12"
+                       FontSize="12" Style="{StaticResource MutedText}" />
+
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Margin="0,2" HorizontalAlignment="Center">
+                    <Hyperlink NavigateUri="https://github.com/BJDubb/SirenSharp" RequestNavigate="Hyperlink_RequestNavigate">GitHub</Hyperlink>
                 </TextBlock>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Margin="5">
-                <TextBlock Text="YouTube: " FontSize="12" TextAlignment="Center"/>
-                <TextBlock>
-                <Hyperlink NavigateUri="https://www.youtube.com/@bjdubb" RequestNavigate="Hyperlink_RequestNavigate">
-                    https://www.youtube.com/@bjdubb
-                </Hyperlink>
+                <TextBlock Margin="0,2" HorizontalAlignment="Center">
+                    <Hyperlink NavigateUri="https://www.youtube.com/@bjdubb" RequestNavigate="Hyperlink_RequestNavigate">YouTube</Hyperlink>
                 </TextBlock>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Margin="5">
-                <TextBlock Text="Discord: " FontSize="12" TextAlignment="Center"/>
-                <TextBlock>
-                <Hyperlink NavigateUri="https://discord.gg/GCMRtBNCXR" RequestNavigate="Hyperlink_RequestNavigate">
-                    https://discord.gg/GCMRtBNCXR
-                </Hyperlink>
+                <TextBlock Margin="0,2" HorizontalAlignment="Center">
+                    <Hyperlink NavigateUri="https://discord.gg/GCMRtBNCXR" RequestNavigate="Hyperlink_RequestNavigate">Discord</Hyperlink>
                 </TextBlock>
-            </StackPanel>
-
-            <StackPanel Orientation="Horizontal" Margin="5">
-                <TextBlock Text="Support Me: " FontSize="12" TextAlignment="Center"/>
-                <TextBlock>
-                <Hyperlink NavigateUri="https://ko-fi.com/bjdubb" RequestNavigate="Hyperlink_RequestNavigate">
-                    https://ko-fi.com/bjdubb
-                </Hyperlink>
+                <TextBlock Margin="0,2" HorizontalAlignment="Center">
+                    <Hyperlink NavigateUri="https://ko-fi.com/bjdubb" RequestNavigate="Hyperlink_RequestNavigate">Support on Ko-fi</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="0,2" HorizontalAlignment="Center">
+                    <Hyperlink NavigateUri="https://docs.sirensharp.dev" RequestNavigate="Hyperlink_RequestNavigate">Documentation</Hyperlink>
                 </TextBlock>
             </StackPanel>
         </StackPanel>
     </Grid>
-</Window>
+</ui:FluentWindow>
