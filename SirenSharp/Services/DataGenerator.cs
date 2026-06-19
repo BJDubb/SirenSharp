@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using CodeWalker.GameFiles;
 using SirenSharp.Models;
 
 namespace SirenSharp.Services
 {
-    public class DataGenerator : IDataGenerator
+    public class DataGenerator
     {
         public string GenerateNametable(List<SoundSet> soundSets)
         {
@@ -70,7 +71,7 @@ namespace SirenSharp.Services
 
                     xml.WriteStartElement("SoundSets");
 
-                    foreach (var sound in soundSet.Sounds)
+                    foreach (var sound in soundSet.Sounds.OrderBy(s => JenkHash.GenHash(s.Name.ToLower())))
                     {
                         xml.WriteStartElement("Item");
                         xml.WriteStartElement("ScriptName");

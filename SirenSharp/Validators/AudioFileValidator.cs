@@ -1,33 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
-using NAudio.FileFormats.Wav;
 using NAudio.Wave;
+using SirenSharp.Services;
 
 namespace SirenSharp.Validators
 {
     public class AudioFileValidator : ValidationRule
     {
+        private static readonly WavFormatAnalyzer Analyzer = new();
+
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
-            string filepath = (string)value;
+            var filepath = value as string;
 
-            //if (string.IsNullOrEmpty(filepath)) return ValidationResult.ValidResult;
+            if (string.IsNullOrWhiteSpace(filepath))
+                return new ValidationResult(false, "No audio file selected");
 
-            if (!File.Exists(filepath)) return new ValidationResult(false, "File does not exist");
+            if (!File.Exists(filepath))
+                return new ValidationResult(false, "File does not exist");
 
-            try
+            if (!Analyzer.TryAnalyze(filepath, out var info, out var error))
+                return new ValidationResult(false, error ?? "Invalid WAV file");
+
+            if (!info!.IsCompatible)
             {
-                new WaveFileReader(filepath);
-            }
-            catch (FormatException e)
-            { 
-                return new ValidationResult(false, e.Message);
+                return new ValidationResult(false,
+                    $"WAV must be mono 16-bit PCM ({info.GetIssuesSummary()}). Use Fix Audio or re-export from Audacity.");
             }
 
             return ValidationResult.ValidResult;
