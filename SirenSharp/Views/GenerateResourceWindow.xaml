@@ -4,7 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        Title="Generate FiveM Resource" Height="460" Width="540"
+        Title="Generate FiveM Resource" Height="540" Width="540"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
@@ -20,6 +20,7 @@
 
         <Grid Grid.Row="1" Margin="24,8,24,24">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -61,13 +62,13 @@
                 </Grid>
             </StackPanel>
 
-            <StackPanel Grid.Row="5" Margin="0,0,0,12" VerticalAlignment="Top">
+            <StackPanel Grid.Row="5" Margin="0,0,0,12">
                 <CheckBox Content="Generate in-game tester resource" IsChecked="{Binding GenerateTester}" />
                 <TextBlock Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,4,0,0"
                            Text="Also writes a 'sirensharp-audio-test' resource next to the output, with an in-game RageUI menu to play these sirens with no LVC config." />
             </StackPanel>
 
-            <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
+            <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right">
                 <ui:Button Content="Cancel" Margin="0,0,8,0" Appearance="Secondary"
                            Command="{Binding CancelCommand}" CommandParameter="{Binding ElementName=GenerateResourceModalWindow}" IsCancel="True" />
                 <ui:Button Content="Generate" Appearance="Primary"
