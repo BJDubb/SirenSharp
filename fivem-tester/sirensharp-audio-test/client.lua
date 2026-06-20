@@ -37,30 +37,62 @@ local function stopCurrent()
     end
 end
 
-local function playSiren(soundset, siren, dlc)
-    stopCurrent()
+-- A hot-loaded resource doesn't have the wavepack in memory yet, so the bank has
+-- to be requested before playback (a fresh /reconnect loads it from the manifest's
+-- AUDIO_WAVEPACK, which is why reconnecting "fixes" it). RequestScriptAudioBank is
+-- async - it returns false while loading and true once ready - so we poll it.
+local loadedBank = nil
 
-    local ped = PlayerPedId()
-    local veh = GetVehiclePedIsIn(ped, false)
-    local entity = (veh ~= 0) and veh or ped
+local function ensureBankLoaded(bank)
+    if RequestScriptAudioBank(bank, false) then return true end
+    local deadline = GetGameTimer() + 5000
+    while GetGameTimer() < deadline do
+        Wait(50)
+        if RequestScriptAudioBank(bank, false) then return true end
+    end
+    return false
+end
+
+local function playSiren(soundset, siren, dlc)
     local setName = ('%s_soundset'):format(soundset)
     local bank = ('dlc_%s/%s'):format(dlc, soundset)
 
-    currentSoundId = GetSoundId()
-    currentLabel = ('%s / %s'):format(setName, siren)
+    -- Loading the bank yields, so do this off the menu render thread.
+    CreateThread(function()
+        stopCurrent()
 
-    if use2D then
-        -- 2D fallback: audible regardless of position, useful to confirm the
-        -- bank loaded even if positional playback seems silent.
-        PlaySoundFrontend(currentSoundId, siren, setName, true)
-    else
-        PlaySoundFromEntity(currentSoundId, siren, entity, setName, 0, 0)
-    end
+        -- Free the previous bank when switching soundsets (FiveM caps concurrent banks).
+        if loadedBank ~= nil and loadedBank ~= bank then
+            ReleaseNamedScriptAudioBank(loadedBank)
+            loadedBank = nil
+        end
 
-    -- Echo the exact native names + Bank path to F8 so the player can compare
-    -- against their LVC VCF (String/Ref = siren name, Bank = the dlc path).
-    echo(('play name="%s" soundset="%s" bank="%s" mode=%s entity=%d')
-        :format(siren, setName, bank, use2D and '2D' or 'entity', entity))
+        if not ensureBankLoaded(bank) then
+            echo(('bank "%s" did not load - make sure the pack resource is started (a /reconnect also forces it)'):format(bank))
+            return
+        end
+        loadedBank = bank
+
+        local ped = PlayerPedId()
+        local veh = GetVehiclePedIsIn(ped, false)
+        local entity = (veh ~= 0) and veh or ped
+
+        currentSoundId = GetSoundId()
+        currentLabel = ('%s / %s'):format(setName, siren)
+
+        if use2D then
+            -- 2D fallback: audible regardless of position, useful to confirm the
+            -- bank loaded even if positional playback seems silent.
+            PlaySoundFrontend(currentSoundId, siren, setName, true)
+        else
+            PlaySoundFromEntity(currentSoundId, siren, entity, setName, 0, 0)
+        end
+
+        -- Echo the exact native names + Bank path to F8 so the player can compare
+        -- against their LVC VCF (String/Ref = siren name, Bank = the dlc path).
+        echo(('play name="%s" soundset="%s" bank="%s" mode=%s entity=%d')
+            :format(siren, setName, bank, use2D and '2D' or 'entity', entity))
+    end)
 end
 
 -- Release the handle once a one-shot finishes (sirens loop, so this mostly
@@ -88,7 +120,7 @@ function RageUI.PoolMenus:SirenTest()
         for _, soundset in ipairs(Config.Soundsets) do
             Items:AddButton(soundset.name, ('Bank: dlc_%s/%s'):format(soundset.dlc, soundset.name), {}, function() end, SoundsetMenus[soundset.name])
         end
-    end)
+    end, function(Panels) end)
 
     for _, soundset in ipairs(Config.Soundsets) do
         SoundsetMenus[soundset.name]:IsVisible(function(Items)
@@ -101,7 +133,7 @@ function RageUI.PoolMenus:SirenTest()
             Items:AddButton('Stop', 'Stop the sound currently playing.', {}, function(onSelected)
                 if onSelected then stopCurrent() end
             end)
-        end)
+        end, function(Panels) end)
     end
 end
 
