@@ -24,6 +24,7 @@ namespace SirenSharp.ViewModels
         private readonly IResourceExporter exporter;
         private readonly PreflightService preflight;
         private readonly DiagnosticsExporter diagnosticsExporter;
+        private readonly UpdateService updateService;
         private readonly AudioPreviewService audioPreview;
         private readonly WavSanitizer wavSanitizer;
         private readonly WavFormatAnalyzer wavFormatAnalyzer;
@@ -58,6 +59,7 @@ namespace SirenSharp.ViewModels
         public ICommand OpenAboutCommand { get; }
         public ICommand OpenHelpCommand { get; }
         public ICommand ExportDiagnosticsCommand { get; }
+        public IRelayCommand ApplyUpdateCommand { get; }
         public ICommand PlaySirenCommand { get; }
         public ICommand StopPreviewCommand { get; }
         public ICommand FixSirenAudioCommand { get; }
@@ -74,6 +76,7 @@ namespace SirenSharp.ViewModels
             IResourceExporter exporter,
             PreflightService preflight,
             DiagnosticsExporter diagnosticsExporter,
+            UpdateService updateService,
             AudioPreviewService audioPreview,
             WavSanitizer wavSanitizer,
             WavFormatAnalyzer wavFormatAnalyzer,
@@ -84,6 +87,7 @@ namespace SirenSharp.ViewModels
             this.exporter = exporter;
             this.preflight = preflight;
             this.diagnosticsExporter = diagnosticsExporter;
+            this.updateService = updateService;
             this.audioPreview = audioPreview;
             this.wavSanitizer = wavSanitizer;
             this.wavFormatAnalyzer = wavFormatAnalyzer;
@@ -102,9 +106,10 @@ namespace SirenSharp.ViewModels
             DeleteSirenCommand = new RelayCommand(DeleteSiren, () => CurrentSiren != null);
             BrowseSirenCommand = new RelayCommand(BrowseSiren, () => CurrentSiren != null);
             GenerateResourceCommand = new RelayCommand(GenerateResource, () => CanGenerateResource && !IsGenerating);
-            OpenAboutCommand = new RelayCommand(() => new AboutWindow().Show());
+            OpenAboutCommand = new RelayCommand(() => new AboutWindow(updateService).Show());
             OpenHelpCommand = new RelayCommand(() => new HelpWindow().ShowDialog());
             ExportDiagnosticsCommand = new RelayCommand(ExportDiagnostics);
+            ApplyUpdateCommand = new RelayCommand(ApplyUpdate, () => UpdateAvailable);
             PlaySirenCommand = new RelayCommand(PlaySiren, () => CurrentSiren != null && File.Exists(CurrentSiren.AudioPath));
             StopPreviewCommand = new RelayCommand(StopPreview, () => audioPreview.IsPlaying);
             FixSirenAudioCommand = new RelayCommand(FixSirenAudio, () => CurrentSiren != null && CurrentSiren.NeedsConversion);
@@ -122,6 +127,52 @@ namespace SirenSharp.ViewModels
             };
 
             LoadRecentProjects();
+
+            _ = CheckForUpdatesOnStartupAsync();
+        }
+
+        private string? availableUpdateVersion;
+
+        /// <summary>Version string of a downloaded-ready update, or null when none.</summary>
+        public bool UpdateAvailable => availableUpdateVersion != null;
+
+        /// <summary>e.g. "Update to v1.3.0 ready - restart to apply".</summary>
+        public string UpdateBannerText =>
+            availableUpdateVersion == null ? string.Empty : $"Update to v{availableUpdateVersion} ready - restart to apply";
+
+        /// <summary>e.g. "v1.2.0 (stable)" for the About window.</summary>
+        public string AppVersionDisplay => $"v{updateService.CurrentVersion} ({updateService.Channel})";
+
+        private async Task CheckForUpdatesOnStartupAsync()
+        {
+            try
+            {
+                var version = await updateService.CheckForUpdatesAsync();
+                if (version != null)
+                {
+                    availableUpdateVersion = version;
+                    OnPropertyChanged(nameof(UpdateAvailable));
+                    OnPropertyChanged(nameof(UpdateBannerText));
+                    ApplyUpdateCommand.NotifyCanExecuteChanged();
+                }
+            }
+            catch
+            {
+                // Offline or feed unavailable - silently skip; manual check still works.
+            }
+        }
+
+        private async void ApplyUpdate()
+        {
+            try
+            {
+                StatusBarText = "Downloading update...";
+                await updateService.DownloadAndApplyAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageDialog.Error("Update failed", $"Could not apply the update: {ex.Message}");
+            }
         }
 
         public Project? Project

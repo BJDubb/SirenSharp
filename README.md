@@ -14,9 +14,10 @@ A FiveM tool for creating server sided sirens.
 
 ## Getting Started
 
-Download latest version from the [releases](https://github.com/BJDubb/SirenSharp/releases/latest) page.
+Grab the latest build from the [releases](https://github.com/BJDubb/SirenSharp/releases/latest) page.
 
-Unzip the `.zip` and run `SirenSharp.exe`
+- **Recommended:** run `SirenSharp-win-Setup.exe`. It installs the app and updates itself in the background - no re-downloading for new versions.
+- **Portable:** unzip `SirenSharp-...-portable-win-x64.zip` and run `SirenSharp.exe`. No auto-update; re-download to upgrade.
 
 
 ## Discord

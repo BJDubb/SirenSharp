@@ -19,14 +19,14 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="Velopack" Version="1.2.0" />
     <PackageReference Include="WPF-UI" Version="3.0.5" />
   </ItemGroup>
 
   <!-- Embed the FiveM in-game tester template (RageUI + scripts) so the export
        flow can emit a ready-to-run copy. config.lua is generated per-project. -->
   <ItemGroup>
-    <EmbeddedResource Include="..\fivem-tester\sirensharp-audio-test\**\*.lua;..\fivem-tester\sirensharp-audio-test\**\*.md"
-                      Exclude="..\fivem-tester\sirensharp-audio-test\config.lua">
+    <EmbeddedResource Include="..\fivem-tester\sirensharp-audio-test\**\*.lua;..\fivem-tester\sirensharp-audio-test\**\*.md" Exclude="..\fivem-tester\sirensharp-audio-test\config.lua">
       <LogicalName>tester/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>

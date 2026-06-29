@@ -1,7 +1,8 @@
 name: Release
 
-# When a PR is merged into master, build a self-contained single-file exe,
-# tag it vX.Y (from <Version> in the csproj) and publish a GitHub Release.
+# When a PR is merged into master, build a Velopack installer (Setup.exe + delta
+# updates) and publish it to a GitHub Release tagged vX.Y.Z (from <Version> in the
+# csproj). A portable single-file zip is attached to the same release as a fallback.
 # Re-running for a version that already has a release is a no-op.
 on:
   push:
@@ -54,26 +55,51 @@ jobs:
           }
           exit 0
 
-      - name: Publish self-contained single-file
+      - name: Install Velopack CLI
+        if: steps.check.outputs.exists == 'false'
+        run: dotnet tool install -g vpk --version 1.2.0
+
+      - name: Publish (self-contained, folder layout for Velopack)
+        if: steps.check.outputs.exists == 'false'
+        run: >
+          dotnet publish SirenSharp/SirenSharp.csproj -c Release -r win-x64
+          --self-contained true -p:PublishSingleFile=false -o publish
+
+      - name: Download previous release for delta updates
+        if: steps.check.outputs.exists == 'false'
+        continue-on-error: true
+        run: vpk download github --repoUrl https://github.com/BJDubb/SirenSharp --token ${{ github.token }}
+
+      - name: Build Velopack release
+        if: steps.check.outputs.exists == 'false'
+        run: >
+          vpk pack -u SirenSharp -v ${{ steps.ver.outputs.version }}
+          -p publish -e SirenSharp.exe --packTitle SirenSharp --icon SirenSharp/sirensharp.ico
+
+      - name: Publish portable single-file (fallback)
         if: steps.check.outputs.exists == 'false'
         run: dotnet publish SirenSharp/SirenSharp.csproj -c Release /p:PublishProfile=win-x64
 
-      - name: Package release zip
+      - name: Package portable zip
         if: steps.check.outputs.exists == 'false'
         id: pkg
         shell: pwsh
         run: |
           $pub = "SirenSharp/bin/Release/net8.0-windows/win-x64/publish"
-          $zip = "SirenSharp-${{ steps.ver.outputs.tag }}-win-x64.zip"
+          $zip = "SirenSharp-${{ steps.ver.outputs.tag }}-portable-win-x64.zip"
           Compress-Archive -Path "$pub/SirenSharp.exe" -DestinationPath $zip -Force
           "zip=$zip" >> $env:GITHUB_OUTPUT
           Write-Host "Packaged $zip"
 
-      - name: Create GitHub Release
+      - name: Upload Velopack release to GitHub
         if: steps.check.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.ver.outputs.tag }}
-          name: SirenSharp ${{ steps.ver.outputs.tag }}
-          generate_release_notes: true
-          files: ${{ steps.pkg.outputs.zip }}
+        run: >
+          vpk upload github --repoUrl https://github.com/BJDubb/SirenSharp
+          --token ${{ github.token }} --publish
+          --releaseName "SirenSharp ${{ steps.ver.outputs.tag }}" --tag ${{ steps.ver.outputs.tag }}
+
+      - name: Attach portable zip to the release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload ${{ steps.ver.outputs.tag }} ${{ steps.pkg.outputs.zip }}

@@ -74,6 +74,9 @@
                 <ui:Button Content="Diagnostics" Icon="{ui:SymbolIcon DocumentBulletList24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding ExportDiagnosticsCommand}" />
                 <ui:Button Content="Help" Icon="{ui:SymbolIcon QuestionCircle24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding OpenHelpCommand}" />
                 <ui:Button Content="About" Icon="{ui:SymbolIcon Info24}" Appearance="Secondary" Command="{Binding OpenAboutCommand}" />
+                <ui:Button Icon="{ui:SymbolIcon ArrowDownload24}" Appearance="Primary" Margin="6,0,0,0"
+                           Content="{Binding UpdateBannerText}" Command="{Binding ApplyUpdateCommand}"
+                           Visibility="{Binding UpdateAvailable, Converter={StaticResource boolToVis}}" />
             </WrapPanel>
         </Border>
 
