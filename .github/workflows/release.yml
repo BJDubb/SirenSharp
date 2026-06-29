@@ -72,8 +72,13 @@ jobs:
 
       - name: Build Velopack release
         if: steps.check.outputs.exists == 'false'
+        # Pack id is SirenSharpApp (not SirenSharp) on purpose: Velopack installs to
+        # %LocalAppData%\<id>, and the app already uses %LocalAppData%\SirenSharp for its
+        # own data (settings/projects/resources). Sharing that folder made Setup think the
+        # app was "already installed". A distinct install id keeps the two apart, so user
+        # data is untouched on install/update.
         run: >
-          vpk pack -u SirenSharp -v ${{ steps.ver.outputs.version }}
+          vpk pack -u SirenSharpApp -v ${{ steps.ver.outputs.version }}
           -p publish -e SirenSharp.exe --packTitle SirenSharp --icon SirenSharp/sirensharp.ico
 
       - name: Publish portable single-file (fallback)
