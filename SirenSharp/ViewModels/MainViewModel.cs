@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using SirenSharp.Models;
 using SirenSharp.Services;
+using SirenSharp.Services.Exporters;
+using SirenSharp.Services.Preflight;
 using SirenSharp.Validators;
 using SirenSharp.Views;
 using System.Collections;
@@ -19,7 +21,10 @@ namespace SirenSharp.ViewModels
 {
     public class MainViewModel : ViewModelBase, INotifyDataErrorInfo
     {
-        private readonly ResourceGenerator resourceGenerator;
+        private readonly IResourceExporter exporter;
+        private readonly PreflightService preflight;
+        private readonly DiagnosticsExporter diagnosticsExporter;
+        private readonly UpdateService updateService;
         private readonly AudioPreviewService audioPreview;
         private readonly WavSanitizer wavSanitizer;
         private readonly WavFormatAnalyzer wavFormatAnalyzer;
@@ -37,6 +42,8 @@ namespace SirenSharp.ViewModels
         private string statusBarText = "Ready";
         private string? lastGeneratedResourcePath;
         private bool isGenerating;
+        private DiagnosticReport preflightReport = new();
+        private ResourceGenerationResult? lastGenerationResult;
 
         public ICommand NewProjectCommand { get; }
         public ICommand OpenProjectCommand { get; }
@@ -51,6 +58,8 @@ namespace SirenSharp.ViewModels
         public ICommand GenerateResourceCommand { get; }
         public ICommand OpenAboutCommand { get; }
         public ICommand OpenHelpCommand { get; }
+        public ICommand ExportDiagnosticsCommand { get; }
+        public IRelayCommand ApplyUpdateCommand { get; }
         public ICommand PlaySirenCommand { get; }
         public ICommand StopPreviewCommand { get; }
         public ICommand FixSirenAudioCommand { get; }
@@ -64,7 +73,10 @@ namespace SirenSharp.ViewModels
         public ObservableCollection<RecentProjectInfo> RecentProjects { get; } = new();
 
         public MainViewModel(
-            ResourceGenerator resourceGenerator,
+            IResourceExporter exporter,
+            PreflightService preflight,
+            DiagnosticsExporter diagnosticsExporter,
+            UpdateService updateService,
             AudioPreviewService audioPreview,
             WavSanitizer wavSanitizer,
             WavFormatAnalyzer wavFormatAnalyzer,
@@ -72,7 +84,10 @@ namespace SirenSharp.ViewModels
             AppSettingsService appSettings,
             IServiceProvider serviceProvider)
         {
-            this.resourceGenerator = resourceGenerator;
+            this.exporter = exporter;
+            this.preflight = preflight;
+            this.diagnosticsExporter = diagnosticsExporter;
+            this.updateService = updateService;
             this.audioPreview = audioPreview;
             this.wavSanitizer = wavSanitizer;
             this.wavFormatAnalyzer = wavFormatAnalyzer;
@@ -91,8 +106,10 @@ namespace SirenSharp.ViewModels
             DeleteSirenCommand = new RelayCommand(DeleteSiren, () => CurrentSiren != null);
             BrowseSirenCommand = new RelayCommand(BrowseSiren, () => CurrentSiren != null);
             GenerateResourceCommand = new RelayCommand(GenerateResource, () => CanGenerateResource && !IsGenerating);
-            OpenAboutCommand = new RelayCommand(() => new AboutWindow().Show());
+            OpenAboutCommand = new RelayCommand(() => new AboutWindow(updateService).Show());
             OpenHelpCommand = new RelayCommand(() => new HelpWindow().ShowDialog());
+            ExportDiagnosticsCommand = new RelayCommand(ExportDiagnostics);
+            ApplyUpdateCommand = new RelayCommand(ApplyUpdate, () => UpdateAvailable);
             PlaySirenCommand = new RelayCommand(PlaySiren, () => CurrentSiren != null && File.Exists(CurrentSiren.AudioPath));
             StopPreviewCommand = new RelayCommand(StopPreview, () => audioPreview.IsPlaying);
             FixSirenAudioCommand = new RelayCommand(FixSirenAudio, () => CurrentSiren != null && CurrentSiren.NeedsConversion);
@@ -110,6 +127,52 @@ namespace SirenSharp.ViewModels
             };
 
             LoadRecentProjects();
+
+            _ = CheckForUpdatesOnStartupAsync();
+        }
+
+        private string? availableUpdateVersion;
+
+        /// <summary>Version string of a downloaded-ready update, or null when none.</summary>
+        public bool UpdateAvailable => availableUpdateVersion != null;
+
+        /// <summary>e.g. "Update to v1.3.0 ready - restart to apply".</summary>
+        public string UpdateBannerText =>
+            availableUpdateVersion == null ? string.Empty : $"Update to v{availableUpdateVersion} ready - restart to apply";
+
+        /// <summary>e.g. "v1.2.0 (stable)" for the About window.</summary>
+        public string AppVersionDisplay => $"v{updateService.CurrentVersion} ({updateService.Channel})";
+
+        private async Task CheckForUpdatesOnStartupAsync()
+        {
+            try
+            {
+                var version = await updateService.CheckForUpdatesAsync();
+                if (version != null)
+                {
+                    availableUpdateVersion = version;
+                    OnPropertyChanged(nameof(UpdateAvailable));
+                    OnPropertyChanged(nameof(UpdateBannerText));
+                    ApplyUpdateCommand.NotifyCanExecuteChanged();
+                }
+            }
+            catch
+            {
+                // Offline or feed unavailable - silently skip; manual check still works.
+            }
+        }
+
+        private async void ApplyUpdate()
+        {
+            try
+            {
+                StatusBarText = "Downloading update...";
+                await updateService.DownloadAndApplyAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageDialog.Error("Update failed", $"Could not apply the update: {ex.Message}");
+            }
         }
 
         public Project? Project
@@ -254,7 +317,33 @@ namespace SirenSharp.ViewModels
             set => SetProperty(ref statusBarText, value);
         }
 
-        public bool HasValidationError => Project != null && !Project.IsValid();
+        /// <summary>
+        /// The latest preflight findings for the current project, recomputed by
+        /// <see cref="RefreshValidationState"/>. Errors block generation; warnings don't.
+        /// </summary>
+        public DiagnosticReport PreflightReport
+        {
+            get => preflightReport;
+            private set => SetProperty(ref preflightReport, value);
+        }
+
+        public bool HasValidationError => Project != null && PreflightReport.HasErrors;
+
+        /// <summary>Short count line for the issues bar header, e.g. "2 errors · 1 warning".</summary>
+        public string PreflightSummary
+        {
+            get
+            {
+                var errors = PreflightReport.Errors.Count();
+                var warnings = PreflightReport.Warnings.Count();
+                if (errors == 0 && warnings == 0) return "No issues";
+
+                var parts = new List<string>();
+                if (errors > 0) parts.Add($"{errors} error{(errors == 1 ? "" : "s")}");
+                if (warnings > 0) parts.Add($"{warnings} warning{(warnings == 1 ? "" : "s")}");
+                return string.Join(" · ", parts);
+            }
+        }
 
         // Live "unsaved changes" flag, surfaced in the toolbar and window title.
         public bool IsDirty => SafeHasUnsavedChanges();
@@ -267,7 +356,7 @@ namespace SirenSharp.ViewModels
         }
 
         public bool CanGenerateResource =>
-            Project != null && Project.IsValid() && Project.SoundSets.Count > 0;
+            Project != null && !PreflightReport.HasErrors && Project.SoundSets.Count > 0;
 
         public bool IsGenerating
         {
@@ -566,12 +655,14 @@ namespace SirenSharp.ViewModels
             vm.ResourceName = Project.ProjectName.ToLower().Replace(" ", "_");
             vm.DlcName = string.IsNullOrWhiteSpace(Project.DLCName) ? vm.DlcName : Project.DLCName;
             vm.FxVersion = appSettings.Settings.DefaultFxVersion;
+            vm.UseNativeBackend = appSettings.Settings.UseNativeAwcBackend;
 
             var dialog = new GenerateResourceWindow { DataContext = vm };
             if (dialog.ShowDialog() != true) return;
 
             Project.DLCName = vm.DlcName;
             appSettings.Settings.DefaultFxVersion = vm.FxVersion;
+            appSettings.Settings.UseNativeAwcBackend = vm.UseNativeBackend;
             appSettings.Save();
 
             var resourceDir = Path.Combine(vm.ResourcePath, vm.ResourceName);
@@ -591,6 +682,7 @@ namespace SirenSharp.ViewModels
                 FolderPath = vm.ResourcePath,
                 FxVersion = vm.FxVersion,
                 GenerateInGameTester = vm.GenerateTester,
+                UseNativeAwcBackend = vm.UseNativeBackend,
                 SoundSets = Project.SoundSets.ToList()
             };
 
@@ -608,12 +700,12 @@ namespace SirenSharp.ViewModels
             {
                 try
                 {
-                    result = await Task.Run(() => resourceGenerator.GenerateResource(options, progress));
+                    result = await Task.Run(() => exporter.Export(options, progress));
                 }
                 catch (Exception ex)
                 {
                     result = new ResourceGenerationResult();
-                    result.Errors.Add($"Unexpected error: {ex.Message}");
+                    result.Diagnostics.AddError($"Unexpected error: {ex.Message}", DiagnosticCodes.Unexpected);
                 }
                 finally
                 {
@@ -630,6 +722,7 @@ namespace SirenSharp.ViewModels
 
         private void ShowGenerationResult(ResourceGenerationResult result, string resourceName)
         {
+            lastGenerationResult = result;
             LastGenerationSucceeded = result.Success;
             LastGenerationDetails.Clear();
 
@@ -640,7 +733,7 @@ namespace SirenSharp.ViewModels
                 LastGenerationTitle = "Resource generated";
                 LastGenerationMessage = $"'{resourceName}' was built successfully and is ready to drop into your FiveM server.";
 
-                foreach (var w in result.Warnings)
+                foreach (var w in result.Diagnostics.Warnings)
                     LastGenerationDetails.Add($"Warning: {w}");
                 foreach (var v in result.AwcVerifications)
                     LastGenerationDetails.Add(v.Summary);
@@ -652,8 +745,8 @@ namespace SirenSharp.ViewModels
                 StatusBarText = "Generation failed.";
                 LastGenerationTitle = "Generation failed";
                 LastGenerationMessage = "SirenSharp could not build the resource. See the details below and fix the listed issues.";
-                foreach (var err in result.Errors)
-                    LastGenerationDetails.Add(err);
+                foreach (var err in result.Diagnostics.Errors)
+                    LastGenerationDetails.Add(err.ToString());
             }
 
             OnPropertyChanged(nameof(LastGenerationSucceeded));
@@ -661,6 +754,34 @@ namespace SirenSharp.ViewModels
             OnPropertyChanged(nameof(LastGenerationMessage));
 
             new GenerationResultWindow { DataContext = this }.ShowDialog();
+        }
+
+        // Writes a diagnostics report (project state, preflight findings, and the last
+        // build result if any) to a file the user picks - useful for bug reports.
+        private void ExportDiagnostics()
+        {
+            var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            var sfd = new SaveFileDialog
+            {
+                Title = "Export diagnostics",
+                FileName = $"sirensharp-diagnostics-{stamp}.txt",
+                DefaultExt = ".txt",
+                Filter = "Text report (*.txt)|*.txt|JSON report (*.json)|*.json",
+                RestoreDirectory = true
+            };
+
+            if (sfd.ShowDialog() != true) return;
+
+            try
+            {
+                var snapshot = diagnosticsExporter.Capture(Project, lastGenerationResult);
+                diagnosticsExporter.Export(snapshot, sfd.FileName);
+                StatusBarText = $"Diagnostics exported to {sfd.FileName}";
+            }
+            catch (Exception ex)
+            {
+                MessageDialog.Error("Export failed", $"Could not write the diagnostics report: {ex.Message}");
+            }
         }
 
         private void PlaySound(Sound? sound)
@@ -829,7 +950,10 @@ namespace SirenSharp.ViewModels
 
         private void RefreshValidationState()
         {
-            StatusBarText = Project?.GetErrors().FirstOrDefault() ?? "Ready";
+            PreflightReport = Project != null ? preflight.Inspect(Project) : new DiagnosticReport();
+            StatusBarText = PreflightReport.Errors.FirstOrDefault()?.ToString() ?? "Ready";
+            OnPropertyChanged(nameof(PreflightReport));
+            OnPropertyChanged(nameof(PreflightSummary));
             OnPropertyChanged(nameof(CanGenerateResource));
             OnPropertyChanged(nameof(HasValidationError));
             OnPropertyChanged(nameof(IsDirty));

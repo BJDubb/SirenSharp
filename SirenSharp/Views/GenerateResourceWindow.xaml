@@ -4,7 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewmodels="clr-namespace:SirenSharp.ViewModels"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        Title="Generate FiveM Resource" Height="540" Width="540"
+        Title="Generate FiveM Resource" Height="640" Width="540"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         ExtendsContentIntoTitleBar="True"
         WindowBackdropType="Mica"
@@ -66,6 +66,9 @@
                 <CheckBox Content="Generate in-game tester resource" IsChecked="{Binding GenerateTester}" />
                 <TextBlock Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,4,0,0"
                            Text="Also writes a 'sirensharp-audio-test' resource next to the output, with an in-game RageUI menu to play these sirens with no LVC config." />
+                <CheckBox Content="Use experimental native AWC builder" IsChecked="{Binding UseNativeBackend}" Margin="0,10,0,0" />
+                <TextBlock Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,4,0,0"
+                           Text="Builds the AWC with SirenSharp's own writer instead of CodeWalker. Experimental - falls back is to leave this unchecked." />
             </StackPanel>
 
             <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Right">

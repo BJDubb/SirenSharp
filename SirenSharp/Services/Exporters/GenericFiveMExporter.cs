@@ -1,35 +1,41 @@
 using System.Reflection;
 using System.Text;
-using System.Xml;
-using CodeWalker.GameFiles;
 using SirenSharp.Models;
+using SirenSharp.Services.Backends;
+using SirenSharp.Services.Backends.Native;
 
-namespace SirenSharp.Services
+namespace SirenSharp.Services.Exporters
 {
-    public class ResourceGenerator
+    /// <summary>
+    /// The default export target: a ready-to-drop FiveM resource (fxmanifest.lua, dlc_*
+    /// AWC files, dat54 data, notes, and an optional in-game tester). Delegates all GTA
+    /// audio encoding to <see cref="AudioPackBuilder"/> and owns only the FiveM-specific
+    /// directory layout and packaging.
+    /// </summary>
+    public sealed class GenericFiveMExporter : IResourceExporter
     {
-        private readonly AwcGenerator awcGenerator;
-        private readonly DataGenerator dataGenerator;
-        private readonly WavSanitizer wavSanitizer;
-        private readonly AwcVerifier awcVerifier;
+        private readonly AudioPackBuilder audioPackBuilder;
+        private readonly CodeWalkerAwcBuildBackend codeWalkerBackend;
+        private readonly NativeAwcBuildBackend nativeBackend;
 
-        public ResourceGenerator(
-            AwcGenerator awcGenerator,
-            DataGenerator dataGenerator,
-            WavSanitizer wavSanitizer,
-            AwcVerifier awcVerifier)
+        public GenericFiveMExporter(
+            AudioPackBuilder audioPackBuilder,
+            CodeWalkerAwcBuildBackend codeWalkerBackend,
+            NativeAwcBuildBackend nativeBackend)
         {
-            this.awcGenerator = awcGenerator;
-            this.dataGenerator = dataGenerator;
-            this.wavSanitizer = wavSanitizer;
-            this.awcVerifier = awcVerifier;
+            this.audioPackBuilder = audioPackBuilder;
+            this.codeWalkerBackend = codeWalkerBackend;
+            this.nativeBackend = nativeBackend;
         }
 
-        public ResourceGenerationResult GenerateResource(ResourceGenerationOptions options, IProgress<string>? progress = null)
+        public string Id => "fivem-generic";
+
+        public string DisplayName => "Generic FiveM Resource";
+
+        public ResourceGenerationResult Export(ResourceGenerationOptions options, IProgress<string>? progress = null)
         {
             var result = new ResourceGenerationResult();
-            var dlc = new DLC(options.DlcName);
-            dlc.SoundSets = options.SoundSets;
+            var dlc = new DLC(options.DlcName) { SoundSets = options.SoundSets };
 
             var resourceDir = Path.Combine(options.FolderPath, options.ResourceName);
             var dataDir = Path.Combine(resourceDir, "data");
@@ -43,89 +49,18 @@ namespace SirenSharp.Services
                 Directory.CreateDirectory(dlcDir);
                 Directory.CreateDirectory(rawDir);
 
-                foreach (var soundSet in dlc.SoundSets)
+                IAwcBuildBackend backend = options.UseNativeAwcBackend ? nativeBackend : codeWalkerBackend;
+                if (!audioPackBuilder.Build(dlc, rawDir, dlcDir, dataDir, backend, result, progress))
                 {
-                    progress?.Report($"Preparing audio for '{soundSet.Name}'...");
-                    var awcDir = Directory.CreateDirectory(Path.Combine(rawDir, soundSet.Name));
-
-                    foreach (var sound in soundSet.Sounds)
-                    {
-                        var destPath = Path.Combine(awcDir.FullName, sound.FileName);
-                        var sanitize = wavSanitizer.Sanitize(sound.AudioPath, destPath);
-
-                        if (!sanitize.Success)
-                        {
-                            result.Errors.Add($"Failed to prepare WAV for {soundSet.Name}/{sound.Name}: {sanitize.Error}");
-                            return result;
-                        }
-
-                        if (sanitize.WasConverted)
-                        {
-                            result.Warnings.Add($"{soundSet.Name}/{sound.Name}: auto-converted ({string.Join(", ", sanitize.Changes)})");
-                        }
-                    }
-
-                    progress?.Report($"Building AWC '{soundSet.Name}' ({soundSet.Sounds.Count} sirens)...");
-                    var awcXml = awcGenerator.GenerateAwcXml(soundSet);
-                    var awcDoc = new XmlDocument();
-                    awcDoc.LoadXml(awcXml);
-
-                    byte[] data;
-                    try
-                    {
-                        data = XmlMeta.GetData(awcDoc, MetaFormat.Awc, awcDir.FullName) ?? Array.Empty<byte>();
-                    }
-                    catch (WavImportException wex)
-                    {
-                        result.Errors.Add(DescribeWavImportError(soundSet.Name, wex));
-                        return result;
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Errors.Add($"Error generating AWC '{soundSet.Name}': {ex.Message}");
-                        return result;
-                    }
-
-                    if (data.Length == 0)
-                    {
-                        result.Errors.Add($"AWC '{soundSet.Name}' produced no data.");
-                        return result;
-                    }
-
-                    var awcOutputPath = Path.Combine(dlcDir, soundSet.Name + ".awc");
-                    File.WriteAllBytes(awcOutputPath, data);
-
-                    var verification = awcVerifier.Verify(soundSet.Name, awcOutputPath);
-                    result.AwcVerifications.Add(verification);
-
-                    if (!verification.IsHealthy)
-                    {
-                        result.Errors.Add(verification.Summary);
-                        return result;
-                    }
+                    return result;
                 }
-
-                progress?.Report("Writing dat54 metadata and manifest...");
-                var nametableText = dataGenerator.GenerateNametable(options.SoundSets);
-                var datXml = dataGenerator.GenerateDatXml(dlc, options.SoundSets);
-
-                var doc = new XmlDocument();
-                doc.LoadXml(datXml);
-                var datData = XmlMeta.GetData(doc, MetaFormat.AudioRel, string.Empty) ?? Array.Empty<byte>();
-
-                var nametableFile = $"{dlc.Name}.dat54.nametable";
-                var datFile = $"{dlc.Name}.dat54.rel";
-
-                File.WriteAllText(Path.Combine(dataDir, nametableFile), nametableText);
-                File.WriteAllBytes(Path.Combine(dataDir, datFile), datData);
 
                 if (Directory.Exists(rawDir))
                 {
                     Directory.Delete(rawDir, true);
                 }
 
-                var manifest = BuildManifest(options, dlc);
-                File.WriteAllText(Path.Combine(resourceDir, "fxmanifest.lua"), manifest);
+                File.WriteAllText(Path.Combine(resourceDir, "fxmanifest.lua"), BuildManifest(options, dlc));
                 File.WriteAllText(Path.Combine(resourceDir, "SIRENSHARP_NOTES.txt"), BuildResourceNotes(options));
 
                 if (options.GenerateInGameTester)
@@ -137,7 +72,9 @@ namespace SirenSharp.Services
                     }
                     catch (Exception ex)
                     {
-                        result.Warnings.Add($"In-game tester was not generated: {ex.Message}");
+                        result.Diagnostics.AddWarning(
+                            $"In-game tester was not generated: {ex.Message}",
+                            DiagnosticCodes.TesterFailed);
                     }
                 }
 
@@ -147,7 +84,7 @@ namespace SirenSharp.Services
             }
             catch (Exception ex)
             {
-                result.Errors.Add(ex.Message);
+                result.Diagnostics.AddError(ex.Message, DiagnosticCodes.Unexpected);
                 return result;
             }
             finally
@@ -157,26 +94,6 @@ namespace SirenSharp.Services
                     try { Directory.Delete(rawDir, true); } catch { /* ignore */ }
                 }
             }
-        }
-
-        private static string DescribeWavImportError(string soundSetName, WavImportException wex)
-        {
-            var fileLabel = string.IsNullOrEmpty(wex.FilePath) ? soundSetName : $"{soundSetName}/{wex.FilePath}";
-
-            var guidance = wex.Reason switch
-            {
-                WavImportError.UnsupportedEncoding =>
-                    "the WAV is not 16-bit PCM. Use 'Fix Audio' or re-export from Audacity as 16-bit PCM.",
-                WavImportError.UnsupportedChannelCount =>
-                    $"the WAV is not mono ({wex.Channels?.ToString() ?? "multi"}-channel). Use 'Fix Audio' to downmix to mono.",
-                WavImportError.NoAudioData =>
-                    "the WAV contains no audio samples. Re-export a valid clip.",
-                WavImportError.FileReadError =>
-                    "the WAV file could not be read. Make sure it still exists and isn't open in another program.",
-                _ => wex.Message,
-            };
-
-            return $"Could not build AWC for {fileLabel}: {guidance}";
         }
 
         private static string BuildManifest(ResourceGenerationOptions options, DLC dlc)

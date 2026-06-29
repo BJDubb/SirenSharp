@@ -46,17 +46,5 @@ namespace SirenSharp.Tests
             project.Save();
             Assert.False(project.HasUnsavedChanges());
         }
-
-        [Fact]
-        public void GetErrors_FlagsDuplicateSoundsetNames()
-        {
-            using var dir = new TempDir();
-            var project = new Project("demo", dir.File("demo.ssproj"));
-            project.SoundSets.Add(new SoundSet("lspd"));
-            project.SoundSets.Add(new SoundSet("lspd"));
-
-            Assert.False(project.IsValid());
-            Assert.Contains(project.GetErrors(), e => e.Contains("same name"));
-        }
     }
 }

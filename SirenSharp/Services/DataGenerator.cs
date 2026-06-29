@@ -26,6 +26,17 @@ namespace SirenSharp.Services
             return nametableText;
         }
 
+        /// <summary>
+        /// Builds the binary dat54 (.rel) bytes for the DLC by encoding the generated
+        /// dat54 XML through CodeWalker's meta importer.
+        /// </summary>
+        public byte[] GenerateDatData(DLC dlc, List<SoundSet> soundSets)
+        {
+            var doc = new XmlDocument();
+            doc.LoadXml(GenerateDatXml(dlc, soundSets));
+            return XmlMeta.GetData(doc, MetaFormat.AudioRel, string.Empty) ?? Array.Empty<byte>();
+        }
+
         public string GenerateDatXml(DLC dlc, List<SoundSet> soundSets)
         {
             var stream = new MemoryStream();

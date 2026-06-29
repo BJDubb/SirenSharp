@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SirenSharp.Services;
+using SirenSharp.Services.Backends;
+using SirenSharp.Services.Exporters;
+using SirenSharp.Services.Preflight;
 using SirenSharp.ViewModels;
 using SirenSharp.Views;
 using System.Windows;
+using Velopack;
 using Wpf.Ui.Appearance;
 
 namespace SirenSharp
@@ -13,6 +17,11 @@ namespace SirenSharp
 
         public App()
         {
+            // Must run before any other app logic. On Velopack install/update hook
+            // invocations this handles the hook and exits; for normal launches and
+            // portable builds it returns immediately.
+            VelopackApp.Build().Run();
+
             var services = new ServiceCollection();
             ConfigureServices(services);
             serviceProvider = services.BuildServiceProvider();
@@ -23,14 +32,23 @@ namespace SirenSharp
             services
                 .AddSingleton<IServiceProvider>(sp => sp)
                 .AddSingleton<AppSettingsService>()
+                .AddSingleton<UpdateService>()
                 .AddSingleton<ExternalToolLauncher>()
                 .AddSingleton<AudioPreviewService>()
                 .AddTransient<WavFormatAnalyzer>()
                 .AddTransient<WavSanitizer>()
-                .AddTransient<AwcGenerator>()
                 .AddTransient<DataGenerator>()
                 .AddTransient<AwcVerifier>()
-                .AddTransient<ResourceGenerator>()
+                .AddTransient<CodeWalkerAwcBuildBackend>()
+                .AddTransient<Services.Backends.Native.NativeAwcBuildBackend>()
+                .AddTransient<IAwcBuildBackend, CodeWalkerAwcBuildBackend>()
+                .AddTransient<AudioPackBuilder>()
+                .AddTransient<IResourceExporter, GenericFiveMExporter>()
+                .AddTransient<IPreflightCheck, ProjectStructureCheck>()
+                .AddTransient<IPreflightCheck, SoundSetCheck>()
+                .AddTransient<IPreflightCheck, SirenAudioCheck>()
+                .AddSingleton<PreflightService>()
+                .AddTransient<DiagnosticsExporter>()
                 .AddTransient<NewProjectViewModel>()
                 .AddTransient<GenerateResourceViewModel>()
                 .AddSingleton<MainViewModel>()

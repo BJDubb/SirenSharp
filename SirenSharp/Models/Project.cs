@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using SirenSharp.Validators;
 
 namespace SirenSharp.Models
 {
@@ -102,45 +101,6 @@ namespace SirenSharp.Models
             var diskProject = File.ReadAllText(ProjectPath);
 
             return serializedProject != diskProject;
-        }
-
-        public bool IsValid()
-        {
-            return GetErrors().Count == 0;
-        }
-
-        public List<string> GetErrors()
-        {
-            var errors = new List<string>();
-
-            if (SoundSets.GroupBy(x => x.Name).Count() != SoundSets.Count)
-            {
-                errors.Add("AWC's cannot have the same name");
-            }
-
-            foreach (var soundSet in SoundSets)
-            {
-                var validationResult = new AwcNameValidator().ValidateValue(soundSet.Name);
-                if (!validationResult.IsValid) errors.Add($"AWC ({soundSet.Name}): {validationResult.ErrorContent}");
-
-                if (soundSet.Sounds.GroupBy(x => x.Name).Count() != soundSet.Sounds.Count)
-                {
-                    errors.Add($"AWC ({soundSet.Name}) cannot have sirens with the same name");
-                }
-
-                foreach (var sound in soundSet.Sounds)
-                {
-                    validationResult = new SirenNameValidator().ValidateValue(sound.Name);
-                    if (!validationResult.IsValid) errors.Add($"Siren ({soundSet.Name}/{sound.Name}): {validationResult.ErrorContent}");
-
-                    if (string.IsNullOrWhiteSpace(sound.AudioPath) || !File.Exists(sound.AudioPath))
-                    {
-                        errors.Add($"Siren ({soundSet.Name}/{sound.Name}): No WAV file selected or file does not exist");
-                    }
-                }
-            }
-
-            return errors;
         }
     }
 }

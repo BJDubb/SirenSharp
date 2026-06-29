@@ -8,6 +8,7 @@ namespace SirenSharp.Services
         public List<string> RecentProjects { get; set; } = new();
         public string DefaultFxVersion { get; set; } = "cerulean";
         public bool UseDarkTheme { get; set; } = true;
+        public bool UseNativeAwcBackend { get; set; } = false;
     }
 
     public class AppSettingsService
