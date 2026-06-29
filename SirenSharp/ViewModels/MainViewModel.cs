@@ -655,12 +655,14 @@ namespace SirenSharp.ViewModels
             vm.ResourceName = Project.ProjectName.ToLower().Replace(" ", "_");
             vm.DlcName = string.IsNullOrWhiteSpace(Project.DLCName) ? vm.DlcName : Project.DLCName;
             vm.FxVersion = appSettings.Settings.DefaultFxVersion;
+            vm.UseNativeBackend = appSettings.Settings.UseNativeAwcBackend;
 
             var dialog = new GenerateResourceWindow { DataContext = vm };
             if (dialog.ShowDialog() != true) return;
 
             Project.DLCName = vm.DlcName;
             appSettings.Settings.DefaultFxVersion = vm.FxVersion;
+            appSettings.Settings.UseNativeAwcBackend = vm.UseNativeBackend;
             appSettings.Save();
 
             var resourceDir = Path.Combine(vm.ResourcePath, vm.ResourceName);
@@ -680,6 +682,7 @@ namespace SirenSharp.ViewModels
                 FolderPath = vm.ResourcePath,
                 FxVersion = vm.FxVersion,
                 GenerateInGameTester = vm.GenerateTester,
+                UseNativeAwcBackend = vm.UseNativeBackend,
                 SoundSets = Project.SoundSets.ToList()
             };
 

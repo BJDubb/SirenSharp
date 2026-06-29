@@ -12,13 +12,11 @@ namespace SirenSharp.Services
     public sealed class AudioPackBuilder
     {
         private readonly WavSanitizer wavSanitizer;
-        private readonly IAwcBuildBackend backend;
         private readonly DataGenerator dataGenerator;
 
-        public AudioPackBuilder(WavSanitizer wavSanitizer, IAwcBuildBackend backend, DataGenerator dataGenerator)
+        public AudioPackBuilder(WavSanitizer wavSanitizer, DataGenerator dataGenerator)
         {
             this.wavSanitizer = wavSanitizer;
-            this.backend = backend;
             this.dataGenerator = dataGenerator;
         }
 
@@ -33,6 +31,7 @@ namespace SirenSharp.Services
             string rawDir,
             string awcOutputDir,
             string dataDir,
+            IAwcBuildBackend backend,
             ResourceGenerationResult result,
             IProgress<string>? progress = null)
         {

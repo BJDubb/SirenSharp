@@ -16,6 +16,7 @@ namespace SirenSharp.ViewModels
         private string resourcePath = string.Empty;
         private string fxVersion = "cerulean";
         private bool generateTester = true;
+        private bool useNativeBackend;
 
         public string ResourceName
         {
@@ -53,6 +54,12 @@ namespace SirenSharp.ViewModels
         {
             get => generateTester;
             set => SetProperty(ref generateTester, value);
+        }
+
+        public bool UseNativeBackend
+        {
+            get => useNativeBackend;
+            set => SetProperty(ref useNativeBackend, value);
         }
 
         public string[] FxVersionOptions { get; } = { "cerulean", "bodacious", "adamant" };

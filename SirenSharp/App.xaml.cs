@@ -39,6 +39,8 @@ namespace SirenSharp
                 .AddTransient<WavSanitizer>()
                 .AddTransient<DataGenerator>()
                 .AddTransient<AwcVerifier>()
+                .AddTransient<CodeWalkerAwcBuildBackend>()
+                .AddTransient<Services.Backends.Native.NativeAwcBuildBackend>()
                 .AddTransient<IAwcBuildBackend, CodeWalkerAwcBuildBackend>()
                 .AddTransient<AudioPackBuilder>()
                 .AddTransient<IResourceExporter, GenericFiveMExporter>()

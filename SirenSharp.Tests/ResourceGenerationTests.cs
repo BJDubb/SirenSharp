@@ -11,12 +11,14 @@ namespace SirenSharp.Tests
     {
         private static GenericFiveMExporter BuildGenerator()
         {
-            var backend = new CodeWalkerAwcBuildBackend(new AwcVerifier());
+            var verifier = new AwcVerifier();
             var packBuilder = new AudioPackBuilder(
                 new WavSanitizer(new WavFormatAnalyzer()),
-                backend,
                 new DataGenerator());
-            return new GenericFiveMExporter(packBuilder);
+            return new GenericFiveMExporter(
+                packBuilder,
+                new CodeWalkerAwcBuildBackend(verifier),
+                new Services.Backends.Native.NativeAwcBuildBackend(verifier));
         }
 
         [Fact]

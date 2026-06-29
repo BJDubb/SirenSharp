@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text;
 using SirenSharp.Models;
+using SirenSharp.Services.Backends;
+using SirenSharp.Services.Backends.Native;
 
 namespace SirenSharp.Services.Exporters
 {
@@ -13,10 +15,17 @@ namespace SirenSharp.Services.Exporters
     public sealed class GenericFiveMExporter : IResourceExporter
     {
         private readonly AudioPackBuilder audioPackBuilder;
+        private readonly CodeWalkerAwcBuildBackend codeWalkerBackend;
+        private readonly NativeAwcBuildBackend nativeBackend;
 
-        public GenericFiveMExporter(AudioPackBuilder audioPackBuilder)
+        public GenericFiveMExporter(
+            AudioPackBuilder audioPackBuilder,
+            CodeWalkerAwcBuildBackend codeWalkerBackend,
+            NativeAwcBuildBackend nativeBackend)
         {
             this.audioPackBuilder = audioPackBuilder;
+            this.codeWalkerBackend = codeWalkerBackend;
+            this.nativeBackend = nativeBackend;
         }
 
         public string Id => "fivem-generic";
@@ -40,7 +49,8 @@ namespace SirenSharp.Services.Exporters
                 Directory.CreateDirectory(dlcDir);
                 Directory.CreateDirectory(rawDir);
 
-                if (!audioPackBuilder.Build(dlc, rawDir, dlcDir, dataDir, result, progress))
+                IAwcBuildBackend backend = options.UseNativeAwcBackend ? nativeBackend : codeWalkerBackend;
+                if (!audioPackBuilder.Build(dlc, rawDir, dlcDir, dataDir, backend, result, progress))
                 {
                     return result;
                 }
