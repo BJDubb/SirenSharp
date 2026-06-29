@@ -12,7 +12,7 @@ namespace SirenSharp.Tests
         private static DiagnosticsExporter BuildExporter() =>
             new DiagnosticsExporter(
                 PreflightService.CreateDefault(),
-                new CodeWalkerAwcBuildBackend(new AwcGenerator(), new AwcVerifier()));
+                new CodeWalkerAwcBuildBackend(new AwcVerifier()));
 
         [Fact]
         public void Capture_IncludesPreflightFindings_AndEnvironment()

@@ -37,7 +37,6 @@ namespace SirenSharp
                 .AddSingleton<AudioPreviewService>()
                 .AddTransient<WavFormatAnalyzer>()
                 .AddTransient<WavSanitizer>()
-                .AddTransient<AwcGenerator>()
                 .AddTransient<DataGenerator>()
                 .AddTransient<AwcVerifier>()
                 .AddTransient<IAwcBuildBackend, CodeWalkerAwcBuildBackend>()
