@@ -1,18 +1,23 @@
 using System.IO;
 using SirenSharp.Models;
 using SirenSharp.Services;
+using SirenSharp.Services.Backends;
+using SirenSharp.Services.Exporters;
 using Xunit;
 
 namespace SirenSharp.Tests
 {
     public class ResourceGenerationTests
     {
-        private static ResourceGenerator BuildGenerator() =>
-            new ResourceGenerator(
-                new AwcGenerator(),
-                new DataGenerator(),
+        private static GenericFiveMExporter BuildGenerator()
+        {
+            var backend = new CodeWalkerAwcBuildBackend(new AwcGenerator(), new AwcVerifier());
+            var packBuilder = new AudioPackBuilder(
                 new WavSanitizer(new WavFormatAnalyzer()),
-                new AwcVerifier());
+                backend,
+                new DataGenerator());
+            return new GenericFiveMExporter(packBuilder);
+        }
 
         [Fact]
         public void GenerateResource_ProducesHealthyPack()
@@ -37,9 +42,9 @@ namespace SirenSharp.Tests
                 SoundSets = new List<SoundSet> { soundSet }
             };
 
-            var result = BuildGenerator().GenerateResource(options, null);
+            var result = BuildGenerator().Export(options, null);
 
-            Assert.True(result.Success, string.Join(" | ", result.Errors));
+            Assert.True(result.Success, string.Join(" | ", result.Diagnostics.Errors));
 
             var resourceDir = Path.Combine(dir.Path, "test_sirens");
             Assert.True(File.Exists(Path.Combine(resourceDir, "fxmanifest.lua")));
@@ -88,8 +93,8 @@ namespace SirenSharp.Tests
                 SoundSets = new List<SoundSet> { soundSet }
             };
 
-            var result = BuildGenerator().GenerateResource(options, null);
-            Assert.True(result.Success, string.Join(" | ", result.Errors));
+            var result = BuildGenerator().Export(options, null);
+            Assert.True(result.Success, string.Join(" | ", result.Diagnostics.Errors));
 
             var testerDir = Path.Combine(dir.Path, "sirensharp-audio-test");
             Assert.Equal(testerDir, result.TesterPath);

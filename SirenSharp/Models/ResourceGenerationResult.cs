@@ -5,8 +5,13 @@ namespace SirenSharp.Models
         public bool Success { get; set; }
         public string ResourcePath { get; set; } = string.Empty;
         public string? TesterPath { get; set; }
-        public List<string> Errors { get; set; } = new();
-        public List<string> Warnings { get; set; } = new();
+
+        /// <summary>
+        /// Structured findings from the whole build (audio prep, AWC build, verification).
+        /// Replaces the old flat error/warning string lists.
+        /// </summary>
+        public DiagnosticReport Diagnostics { get; } = new();
+
         public List<AwcVerificationResult> AwcVerifications { get; set; } = new();
     }
 }
