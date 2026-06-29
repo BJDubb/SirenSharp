@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SirenSharp.Services;
+using SirenSharp.Services.Backends;
+using SirenSharp.Services.Exporters;
+using SirenSharp.Services.Preflight;
 using SirenSharp.ViewModels;
 using SirenSharp.Views;
 using System.Windows;
@@ -30,7 +33,14 @@ namespace SirenSharp
                 .AddTransient<AwcGenerator>()
                 .AddTransient<DataGenerator>()
                 .AddTransient<AwcVerifier>()
-                .AddTransient<ResourceGenerator>()
+                .AddTransient<IAwcBuildBackend, CodeWalkerAwcBuildBackend>()
+                .AddTransient<AudioPackBuilder>()
+                .AddTransient<IResourceExporter, GenericFiveMExporter>()
+                .AddTransient<IPreflightCheck, ProjectStructureCheck>()
+                .AddTransient<IPreflightCheck, SoundSetCheck>()
+                .AddTransient<IPreflightCheck, SirenAudioCheck>()
+                .AddSingleton<PreflightService>()
+                .AddTransient<DiagnosticsExporter>()
                 .AddTransient<NewProjectViewModel>()
                 .AddTransient<GenerateResourceViewModel>()
                 .AddSingleton<MainViewModel>()

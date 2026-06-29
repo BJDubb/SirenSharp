@@ -40,6 +40,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0" Title="SirenSharp">
@@ -70,6 +71,7 @@
                 <ui:Button Content="Generate Resource" Icon="{ui:SymbolIcon Box24}" Appearance="Primary" Margin="0,0,6,0" Command="{Binding GenerateResourceCommand}" IsEnabled="{Binding CanGenerateResource}" />
                 <ui:Button Content="Open Output" Icon="{ui:SymbolIcon FolderArrowRight24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding OpenOutputFolderCommand}" />
                 <Separator Margin="6,0" />
+                <ui:Button Content="Diagnostics" Icon="{ui:SymbolIcon DocumentBulletList24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding ExportDiagnosticsCommand}" />
                 <ui:Button Content="Help" Icon="{ui:SymbolIcon QuestionCircle24}" Appearance="Secondary" Margin="0,0,6,0" Command="{Binding OpenHelpCommand}" />
                 <ui:Button Content="About" Icon="{ui:SymbolIcon Info24}" Appearance="Secondary" Command="{Binding OpenAboutCommand}" />
             </WrapPanel>
@@ -335,8 +337,71 @@
             </Grid>
         </Grid>
 
+        <!-- Issues bar (preflight findings) -->
+        <Border Grid.Row="3" Padding="8,4" Background="{DynamicResource ControlFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0"
+                Visibility="{Binding PreflightReport.Items.Count, Converter={StaticResource countToVis}}">
+            <Expander>
+                <Expander.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Warning24" FontSize="15" VerticalAlignment="Center" Margin="0,0,8,0"
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}" />
+                        <TextBlock Text="Preflight" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding PreflightSummary}" VerticalAlignment="Center"
+                                   Style="{StaticResource MutedText}" FontSize="12" />
+                    </StackPanel>
+                </Expander.Header>
+                <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0">
+                    <ItemsControl ItemsSource="{Binding PreflightReport.Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2,14,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Severity dot -->
+                                    <Ellipse Grid.Column="0" Width="8" Height="8" VerticalAlignment="Center" Margin="2,0,10,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Severity}" Value="Error">
+                                                        <Setter Property="Fill" Value="{DynamicResource SystemFillColorCriticalBrush}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Severity}" Value="Warning">
+                                                        <Setter Property="Fill" Value="{DynamicResource SystemFillColorCautionBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding SuggestedAction}" FontSize="11" TextWrapping="Wrap"
+                                                   Style="{StaticResource MutedText}"
+                                                   Visibility="{Binding SuggestedAction, Converter={StaticResource nullToVis}}" />
+                                    </StackPanel>
+
+                                    <Border Grid.Column="2" CornerRadius="9" Padding="7,1" VerticalAlignment="Center" Margin="8,0,0,0"
+                                            Background="{DynamicResource SubtleFillColorTertiaryBrush}"
+                                            Visibility="{Binding Target, Converter={StaticResource nullToVis}}">
+                                        <TextBlock Text="{Binding Target}" FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Expander>
+        </Border>
+
         <!-- Status bar -->
-        <Border Grid.Row="3" Padding="12,6" Background="{DynamicResource ControlFillColorDefaultBrush}"
+        <Border Grid.Row="4" Padding="12,6" Background="{DynamicResource ControlFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
             <TextBlock Text="{Binding StatusBarText}" TextTrimming="CharacterEllipsis">
                 <TextBlock.Style>
