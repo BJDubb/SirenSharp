@@ -44,7 +44,9 @@ namespace SirenSharp.Services
                 AppVersion = version?.ToString() ?? "unknown",
                 OperatingSystem = RuntimeInformation.OSDescription,
                 RuntimeVersion = RuntimeInformation.FrameworkDescription,
-                AwcBackend = backend.IsExperimental ? $"{backend.Name} (experimental)" : backend.Name,
+                // Prefer the backend that actually built the pack; fall back to the default.
+                AwcBackend = generation?.AwcBackendName
+                    ?? (backend.IsExperimental ? $"{backend.Name} (experimental)" : backend.Name),
                 ProjectName = project?.ProjectName,
                 DlcName = project?.DLCName,
                 SoundSetCount = project?.SoundSets.Count ?? 0,

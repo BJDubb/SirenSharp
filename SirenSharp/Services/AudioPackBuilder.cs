@@ -35,6 +35,8 @@ namespace SirenSharp.Services
             ResourceGenerationResult result,
             IProgress<string>? progress = null)
         {
+            result.AwcBackendName = backend.IsExperimental ? $"{backend.Name} (experimental)" : backend.Name;
+
             foreach (var soundSet in dlc.SoundSets)
             {
                 progress?.Report($"Preparing audio for '{soundSet.Name}'...");
