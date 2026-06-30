@@ -4,7 +4,7 @@ SirenSharp is a desktop tool for generating FiveM resources that stream custom s
 
 It lets you create multiple AWC soundsets with many sirens each - useful for splitting sirens between departments (e.g. LSPD, BCSO, State).
 
-**v0.4 highlights:**
+**Highlights:**
 
 * Modern dark UI with drag-and-drop WAV import
 * In-app WAV preview before generating
@@ -13,4 +13,4 @@ It lets you create multiple AWC soundsets with many sirens each - useful for spl
 * Selectable `fx_version` for the generated manifest
 * One-click in-game tester (RageUI menu, no LVC config) generated alongside your pack
 
-Download the **release ZIP** from [GitHub Releases](https://github.com/BJDubb/SirenSharp/releases/latest) - not the "Source code" archive.
+Download the latest release from [GitHub Releases](https://github.com/BJDubb/SirenSharp/releases/latest) - not the "Source code" archive.

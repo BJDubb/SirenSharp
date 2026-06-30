@@ -1,26 +1,24 @@
 # ⚙️ Installing SirenSharp
 
+SirenSharp is **Windows only**.
+
 ## Step 1 - Download
 
-Go to [GitHub Releases](https://github.com/BJDubb/SirenSharp/releases/latest) and download **SirenSharp-v0.x.zip**.
+Go to [GitHub Releases](https://github.com/BJDubb/SirenSharp/releases/latest) and pick one:
+
+* **Recommended - installer:** download the **Setup** `.exe`. It installs SirenSharp and then **updates itself automatically** in the background, so you don't have to re-download for every new version.
+* **Portable:** download the **portable** `.zip` if you'd rather not install. No auto-update - you re-download to upgrade.
 
 {% hint style="danger" %}
-Do **not** download "Source code" - that is for developers. You need the release ZIP containing `SirenSharp.exe`.
+Do **not** download "Source code" - that is for developers. Use the Setup `.exe` or the portable `.zip`.
 {% endhint %}
-
-<figure><img src="../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
 
 ## Step 2 - Run
 
-Extract the archive and run `SirenSharp.exe`.
-
-{% hint style="success" %}
-SirenSharp v0.4 is a **self-contained** single executable - the .NET runtime is bundled in. You do **not** need to install anything else.
-{% endhint %}
-
-<figure><img src="../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+* **Installer:** run the Setup `.exe`. SirenSharp installs and launches itself; a desktop/start-menu shortcut is created. It's **self-contained** - you don't need to install .NET or anything else.
+* **Portable:** extract the `.zip` and run `SirenSharp.exe`.
 
 ## Step 3 - Optional tools for verification
 
-* **CodeWalker** or **OpenIV** - verify generated AWC files (SirenSharp can launch these after generation if installed)
-* **Audacity** - manually fix WAVs if needed (mono 16-bit PCM export)
+* **CodeWalker** or **OpenIV** - inspect generated AWC files (SirenSharp can launch CodeWalker after generation if installed)
+* **Audacity** - only if you want to edit source audio by hand; SirenSharp already auto-converts WAVs on export

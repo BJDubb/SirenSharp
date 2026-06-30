@@ -2,6 +2,8 @@
 
 When your project is ready, click **Generate Resource** in the toolbar.
 
+<figure><img src="../.gitbook/assets/generate-dialog.png" alt=""><figcaption><p>The Generate Resource dialog.</p></figcaption></figure>
+
 Fill in:
 
 * **Resource Name** - the FiveM resource folder name
@@ -30,5 +32,5 @@ Note the DLC name - you need it when configuring LVC Fleet VCF files.
 {% endhint %}
 
 {% hint style="warning" %}
-FiveM may only support **7 concurrent audio banks**. If you have more than 7 AWC soundsets, SirenSharp will warn you before generating.
+The constraints that actually matter are each AWC's **size** (it has to fit a wave slot) and the **total** number of custom audio banks your whole server loads - not how many soundsets are in one project. See [Limits & Edge Cases](../info/limits-and-edge-cases.md).
 {% endhint %}

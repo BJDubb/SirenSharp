@@ -3,6 +3,12 @@
 
 A FiveM tool for creating server sided sirens.
 
+[![Docs](https://img.shields.io/badge/docs-docs.sirensharp.dev-blue)](https://docs.sirensharp.dev)
+[![Latest release](https://img.shields.io/github/v/release/BJDubb/SirenSharp)](https://github.com/BJDubb/SirenSharp/releases/latest)
+[![Discord](https://img.shields.io/badge/discord-join-5865F2)](https://discord.gg/GCMRtBNCXR)
+
+📖 **Full documentation: [docs.sirensharp.dev](https://docs.sirensharp.dev)**
+
 ![image](https://github.com/user-attachments/assets/7ccdc58f-ba56-4917-95d3-c0294979c25e)
 
 
