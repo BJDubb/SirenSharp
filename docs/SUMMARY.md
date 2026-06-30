@@ -18,4 +18,5 @@
 ## Info
 
 * [📜 Naming Requirements](info/naming-requirements.md)
+* [⚠️ Limits & Edge Cases](info/limits-and-edge-cases.md)
 * [🔧 Troubleshooting](info/troubleshooting.md)

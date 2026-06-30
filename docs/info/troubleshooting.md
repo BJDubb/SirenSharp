@@ -11,19 +11,9 @@ This is the **#1 support issue** and is usually **not** a SirenSharp bug.
 
 See [LVC Fleet docs](https://docs.luxartengineering.com/fleet/resource-installation/configure-base-settings).
 
-## Silent or ~1 KB AWC files
-
-**Cause:** Incompatible source WAV (stereo, wrong bit depth, junk RIFF headers).
-
-**Fix in v0.4:** Use **Fix Audio** on the siren, or regenerate - SirenSharp auto-converts on export. You can also re-export from Audacity as *WAV (Microsoft) signed 16-bit PCM* mono.
-
 ## AWC shows hex names in OpenIV
 
 **Expected behaviour.** Hex names are part of AWC encoding. Use your **string siren names** in LVC VCF - not the hex values shown in OpenIV.
-
-## Downloaded source code instead of the app
-
-If `SirenSharp.exe` is missing or generation fails silently, you likely downloaded **Source code** from GitHub instead of the release ZIP. Get [SirenSharp-v0.x.zip](https://github.com/BJDubb/SirenSharp/releases/latest).
 
 ## Testing without LVC
 

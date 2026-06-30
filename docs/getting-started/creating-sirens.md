@@ -7,6 +7,8 @@ panel, or click **Import WAV**.
 You can also click **Add** to create a placeholder siren, then assign a WAV to it
 with **Browse** in the inspector on the right.
 
+<figure><img src="../.gitbook/assets/siren-inspector.png" alt=""><figcaption><p>A selected siren - format badge on the row, name/file and Preview in the inspector.</p></figcaption></figure>
+
 {% hint style="info" %}
 **WAV requirements:** Mono channel, 16-bit PCM encoding. SirenSharp shows a format
 badge on each siren and can **Fix Audio** in one click, or auto-convert during
