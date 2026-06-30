@@ -30,15 +30,17 @@ namespace SirenSharp.Tests
             using var dir = new TempDir();
             // Long enough to force a peak chunk (>8192 samples) plus a short clip and mixed case.
             var wail = WavFixtures.MonoPcm16(dir.File("wail.wav"), seconds: 1.5, freq: 550);
-            var yelp = WavFixtures.MonoPcm16(dir.File("yelp.wav"), seconds: 1.0, freq: 900);
-            var horn = WavFixtures.MonoPcm16(dir.File("horn.wav"), seconds: 0.1, freq: 300);
+            // Fixtures are named to match each Sound's prepared file ({Name}.wav), since these
+            // tests feed the backend directly rather than through the sanitizer.
+            var yelp = WavFixtures.MonoPcm16(dir.File("yelp_02.wav"), seconds: 1.0, freq: 900);
+            var horn = WavFixtures.MonoPcm16(dir.File("AirHorn.wav"), seconds: 0.1, freq: 300);
 
             var soundSet = new SoundSet("police");
             soundSet.AddSound(new Sound(wail) { Name = "Wail" });
             soundSet.AddSound(new Sound(yelp) { Name = "yelp_02" });
             soundSet.AddSound(new Sound(horn) { Name = "AirHorn" });
 
-            var native = new NativeAwcBuildBackend(new AwcVerifier()).BuildAwc(soundSet, dir.Path);
+            var native = new NativeAwcBuildBackend().BuildAwc(soundSet, dir.Path);
             var codewalker = new CodeWalkerAwcBuildBackend(new AwcVerifier()).BuildAwc(soundSet, dir.Path);
             Assert.True(native.Success, native.Error?.Message);
             Assert.True(codewalker.Success, codewalker.Error?.Message);
@@ -73,13 +75,44 @@ namespace SirenSharp.Tests
             var soundSet = new SoundSet("police");
             soundSet.AddSound(new Sound(wail) { Name = "Wail" });
 
-            var native = new NativeAwcBuildBackend(new AwcVerifier()).BuildAwc(soundSet, dir.Path);
+            var native = new NativeAwcBuildBackend().BuildAwc(soundSet, dir.Path);
             Assert.True(native.Success, native.Error?.Message);
 
             var awcPath = dir.File("police.awc");
             File.WriteAllBytes(awcPath, native.Data);
             var verification = new AwcVerifier().Verify("police", awcPath);
             Assert.True(verification.IsHealthy, verification.Summary);
+        }
+
+        [Fact]
+        public void NativeValidator_VerifiesOwnOutput_NoCodeWalker()
+        {
+            using var dir = new TempDir();
+            var wail = WavFixtures.MonoPcm16(dir.File("wail.wav"), seconds: 1.5, freq: 550);
+            var soundSet = new SoundSet("police");
+            soundSet.AddSound(new Sound(wail) { Name = "Wail" });
+
+            var build = new NativeAwcBuildBackend().BuildAwc(soundSet, dir.Path);
+            Assert.True(build.Success, build.Error?.Message);
+            var awcPath = dir.File("police.awc");
+            File.WriteAllBytes(awcPath, build.Data);
+
+            var v = NativeAwcValidator.Verify("police", awcPath);
+            Assert.True(v.IsHealthy, v.Summary);
+            Assert.Equal(1, v.StreamCount);
+            Assert.All(v.Streams, s => Assert.False(s.IsSilent));
+        }
+
+        [Fact]
+        public void NativeValidator_FlagsTinyFile()
+        {
+            using var dir = new TempDir();
+            var path = dir.File("bad.awc");
+            File.WriteAllBytes(path, new byte[100]);
+
+            var v = NativeAwcValidator.Verify("x", path);
+            Assert.False(v.IsHealthy);
+            Assert.False(string.IsNullOrEmpty(v.ErrorMessage));
         }
     }
 }

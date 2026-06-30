@@ -21,7 +21,8 @@ namespace SirenSharp.Services
             this.formatAnalyzer = formatAnalyzer;
         }
 
-        public WavSanitizeResult Sanitize(string inputPath, string outputPath)
+        public WavSanitizeResult Sanitize(string inputPath, string outputPath,
+            double trimStartSeconds = 0, double trimEndSeconds = 0)
         {
             var result = new WavSanitizeResult();
 
@@ -36,8 +37,8 @@ namespace SirenSharp.Services
                 var targetFormat = new WaveFormat(before!.SampleRate, 16, 1);
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
-                using var reader = new AudioFileReader(inputPath);
-                ISampleProvider samples = reader;
+                using var reader = AudioReaderFactory.Open(inputPath);
+                ISampleProvider samples = reader.ToSampleProvider();
 
                 if (reader.WaveFormat.Channels > 1)
                 {
@@ -56,6 +57,20 @@ namespace SirenSharp.Services
 
                 if (!before.IsCompatible)
                 {
+                    result.WasConverted = true;
+                }
+
+                // Apply trim last, on the mono float stream, so in/out points are exact
+                // regardless of source format. trimEnd <= trimStart means "play to the end".
+                if (trimStartSeconds > 0 || trimEndSeconds > trimStartSeconds)
+                {
+                    var offset = new OffsetSampleProvider(samples);
+                    if (trimStartSeconds > 0)
+                        offset.SkipOver = TimeSpan.FromSeconds(trimStartSeconds);
+                    if (trimEndSeconds > trimStartSeconds)
+                        offset.Take = TimeSpan.FromSeconds(trimEndSeconds - trimStartSeconds);
+                    samples = offset;
+                    result.Changes.Add($"trimmed to {trimStartSeconds:0.##}s-{(trimEndSeconds > trimStartSeconds ? trimEndSeconds.ToString("0.##") : "end")}s");
                     result.WasConverted = true;
                 }
 

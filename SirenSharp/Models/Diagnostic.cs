@@ -46,6 +46,7 @@ namespace SirenSharp.Models
         public const string AwcDuplicateName = "AWC.DUPLICATE_NAME";
         public const string AwcInvalidName = "AWC.INVALID_NAME";
         public const string AwcNoSirens = "AWC.NO_SIRENS";
+        public const string AwcNameCollision = "AWC.NAME_COLLISION";
         public const string SirenDuplicateName = "SIREN.DUPLICATE_NAME";
         public const string SirenInvalidName = "SIREN.INVALID_NAME";
         public const string SirenMissingFile = "SIREN.MISSING_FILE";

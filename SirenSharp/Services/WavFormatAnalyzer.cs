@@ -23,7 +23,7 @@ namespace SirenSharp.Services
 
             try
             {
-                using var reader = new WaveFileReader(filePath);
+                using var reader = AudioReaderFactory.Open(filePath);
                 var format = reader.WaveFormat;
                 info = new WavFormatInfo
                 {

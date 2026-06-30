@@ -23,6 +23,8 @@ namespace SirenSharp.Models
         private string formatStatus = string.Empty;
         private bool needsConversion;
         private SoundFormatState formatState = SoundFormatState.Missing;
+        private double trimStartSeconds;
+        private double trimEndSeconds;
 
         public string Name
         {
@@ -39,6 +41,50 @@ namespace SirenSharp.Models
                 OnPropertyChanged();
             }
         }
+
+        /// <summary>Trim in-point in seconds from the start of the source. 0 = from the beginning.</summary>
+        public double TrimStartSeconds
+        {
+            get => trimStartSeconds;
+            set
+            {
+                if (SetProperty(ref trimStartSeconds, value))
+                {
+                    OnPropertyChanged(nameof(IsTrimmed));
+                    OnPropertyChanged(nameof(TrimDisplayText));
+                }
+            }
+        }
+
+        /// <summary>Trim out-point in seconds. 0 (or past the end) = play to the end.</summary>
+        public double TrimEndSeconds
+        {
+            get => trimEndSeconds;
+            set
+            {
+                if (SetProperty(ref trimEndSeconds, value))
+                {
+                    OnPropertyChanged(nameof(IsTrimmed));
+                    OnPropertyChanged(nameof(TrimDisplayText));
+                }
+            }
+        }
+
+        [XmlIgnore]
+        public bool IsTrimmed => TrimStartSeconds > 0 || TrimEndSeconds > 0;
+
+        /// <summary>Human-readable trim range; an unset out-point reads "end" rather than 0.00s.</summary>
+        [XmlIgnore]
+        public string TrimDisplayText =>
+            $"{TrimStartSeconds:0.00}s – {(TrimEndSeconds > TrimStartSeconds ? $"{TrimEndSeconds:0.00}s" : "end")}";
+
+        /// <summary>Scratch filename for the sanitized WAV the build pipeline writes and reads,
+        /// regardless of the source extension (MP3/OGG sources still become a .wav here).</summary>
+        [XmlIgnore]
+        public string PreparedFileName => $"{Name}.wav";
+
+        [XmlIgnore]
+        public double LengthSeconds => length.TotalSeconds;
 
         [XmlIgnore]
         public int Samples
@@ -58,7 +104,11 @@ namespace SirenSharp.Models
         public TimeSpan Length
         {
             get => length;
-            set => SetProperty(ref length, value);
+            set
+            {
+                if (SetProperty(ref length, value))
+                    OnPropertyChanged(nameof(LengthSeconds));
+            }
         }
 
         public string FileName => string.IsNullOrWhiteSpace(AudioPath) ? string.Empty : new FileInfo(AudioPath).Name;
@@ -117,13 +167,28 @@ namespace SirenSharp.Models
                 return;
             }
 
-            using (var wfr = new WaveFileReader(filePath))
+            if (!AudioReaderFactory.IsSupported(filePath))
+            {
+                FormatStatus = "Unsupported file type";
+                return;
+            }
+
+            using (var wfr = AudioReaderFactory.Open(filePath))
             {
                 Length = wfr.TotalTime;
                 SampleRate = wfr.WaveFormat.SampleRate;
                 var len = (int)wfr.Length;
                 var other = wfr.WaveFormat.Channels * wfr.WaveFormat.BitsPerSample / 8;
                 Samples = other > 0 ? len / other : 0;
+            }
+
+            // Clamp any trim carried over from a previous source so stale in/out points
+            // can't sit past the end of the new clip.
+            var clipSeconds = length.TotalSeconds;
+            if (clipSeconds > 0)
+            {
+                if (trimStartSeconds >= clipSeconds) TrimStartSeconds = 0;
+                if (trimEndSeconds > clipSeconds) TrimEndSeconds = 0;
             }
 
             Size = new FileInfo(filePath).Length;

@@ -18,7 +18,7 @@ namespace SirenSharp.Tests
             return new GenericFiveMExporter(
                 packBuilder,
                 new CodeWalkerAwcBuildBackend(verifier),
-                new Services.Backends.Native.NativeAwcBuildBackend(verifier));
+                new Services.Backends.Native.NativeAwcBuildBackend());
         }
 
         [Fact]

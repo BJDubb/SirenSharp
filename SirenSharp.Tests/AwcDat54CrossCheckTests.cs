@@ -22,8 +22,10 @@ namespace SirenSharp.Tests
         {
             using var dir = new TempDir();
             // Mixed case + multiple sirens - the exact shape that used to break.
-            var wail = WavFixtures.MonoPcm16(dir.File("wail.wav"), seconds: 1.0, freq: 500);
-            var yelp = WavFixtures.MonoPcm16(dir.File("yelp.wav"), seconds: 1.0, freq: 800);
+            // Fixtures named to match each Sound's prepared file ({Name}.wav) - the backend is
+            // fed directly here, without the sanitizer that would normally write those files.
+            var wail = WavFixtures.MonoPcm16(dir.File("Wail.wav"), seconds: 1.0, freq: 500);
+            var yelp = WavFixtures.MonoPcm16(dir.File("Yelp_02.wav"), seconds: 1.0, freq: 800);
 
             var soundSet = new SoundSet("police");
             soundSet.AddSound(new Sound(wail) { Name = "Wail" });
