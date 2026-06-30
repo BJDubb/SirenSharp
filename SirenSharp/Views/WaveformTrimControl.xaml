@@ -1,0 +1,48 @@
+<UserControl x:Class="SirenSharp.Views.WaveformTrimControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root">
+    <Border CornerRadius="6" Background="{DynamicResource ControlFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1"
+            ClipToBounds="True">
+        <Grid x:Name="Host" Height="84" SizeChanged="OnSizeChanged">
+            <!-- Waveform -->
+            <Path x:Name="WavePath" StrokeThickness="1"
+                  Stroke="{DynamicResource AccentTextFillColorSecondaryBrush}" />
+
+            <!-- Trimmed-out shading + handles -->
+            <Canvas x:Name="Overlay" Background="Transparent">
+                <Rectangle x:Name="LeftShade" Fill="#90000000" Canvas.Left="0" Canvas.Top="0" />
+                <Rectangle x:Name="RightShade" Fill="#90000000" Canvas.Top="0" />
+
+                <Thumb x:Name="StartThumb" Width="10" Cursor="SizeWE" Canvas.Top="0"
+                       DragDelta="StartThumb_DragDelta">
+                    <Thumb.Template>
+                        <ControlTemplate TargetType="Thumb">
+                            <Grid Background="Transparent">
+                                <Rectangle Width="2" HorizontalAlignment="Center"
+                                           Fill="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                <Border Width="8" Height="14" VerticalAlignment="Top" CornerRadius="2"
+                                        Background="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Thumb.Template>
+                </Thumb>
+
+                <Thumb x:Name="EndThumb" Width="10" Cursor="SizeWE" Canvas.Top="0"
+                       DragDelta="EndThumb_DragDelta">
+                    <Thumb.Template>
+                        <ControlTemplate TargetType="Thumb">
+                            <Grid Background="Transparent">
+                                <Rectangle Width="2" HorizontalAlignment="Center"
+                                           Fill="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                                <Border Width="8" Height="14" VerticalAlignment="Bottom" CornerRadius="2"
+                                        Background="{DynamicResource AccentTextFillColorPrimaryBrush}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Thumb.Template>
+                </Thumb>
+            </Canvas>
+        </Grid>
+    </Border>
+</UserControl>

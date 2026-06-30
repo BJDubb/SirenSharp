@@ -22,6 +22,32 @@ namespace SirenSharp.Tests
         }
 
         [Fact]
+        public void AwcNamesSharingFirst8Chars_WarnCollision()
+        {
+            using var dir = new TempDir();
+            var project = new Project("demo", dir.File("demo.ssproj"));
+            // Distinct names, but identical in the first 8 chars -> same wavepack in-game.
+            project.SoundSets.Add(new SoundSet("policecar1"));
+            project.SoundSets.Add(new SoundSet("policecar2"));
+
+            var report = Preflight.Inspect(project);
+            Assert.Contains(report.Warnings, d => d.Code == DiagnosticCodes.AwcNameCollision);
+        }
+
+        [Fact]
+        public void AwcNamesDifferingWithin8Chars_NoCollision()
+        {
+            using var dir = new TempDir();
+            var project = new Project("demo", dir.File("demo.ssproj"));
+            project.SoundSets.Add(new SoundSet("lspd"));
+            project.SoundSets.Add(new SoundSet("bcso"));
+            project.SoundSets.Add(new SoundSet("fire_dept")); // 9 chars but unique in 8 -> fine
+
+            var report = Preflight.Inspect(project);
+            Assert.DoesNotContain(report.Items, d => d.Code == DiagnosticCodes.AwcNameCollision);
+        }
+
+        [Fact]
         public void DuplicateSoundsetNames_AreBlockingError()
         {
             using var dir = new TempDir();

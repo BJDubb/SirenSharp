@@ -41,7 +41,7 @@ namespace SirenSharp.Services.Backends
                 var streams = new List<AwcStream>();
                 foreach (var sound in soundSet.Sounds)
                 {
-                    var wavPath = Path.Combine(preparedWavDirectory, sound.FileName);
+                    var wavPath = Path.Combine(preparedWavDirectory, sound.PreparedFileName);
                     var wav = File.ReadAllBytes(wavPath);
 
                     var stream = new AwcStream(awc)

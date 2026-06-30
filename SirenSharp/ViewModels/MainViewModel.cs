@@ -592,10 +592,10 @@ namespace SirenSharp.ViewModels
         {
             var ofd = new OpenFileDialog
             {
-                Filter = "Wave File (*.wav)|*.wav",
+                Filter = AudioReaderFactory.FileDialogFilter,
                 RestoreDirectory = true,
                 Multiselect = true,
-                Title = "Select WAV files"
+                Title = "Select audio files"
             };
 
             if (ofd.ShowDialog() == true)
@@ -631,7 +631,7 @@ namespace SirenSharp.ViewModels
             if (CurrentSiren == null) return;
             var ofd = new OpenFileDialog
             {
-                Filter = "Wave File (*.wav)|*.wav",
+                Filter = AudioReaderFactory.FileDialogFilter,
                 RestoreDirectory = true
             };
 
@@ -642,14 +642,6 @@ namespace SirenSharp.ViewModels
         private void GenerateResource()
         {
             if (Project == null) return;
-
-            if (Project.SoundSets.Count > 7)
-            {
-                if (!MessageDialog.Confirm("Soundset limit",
-                    "This project has more than 7 soundsets. FiveM may only support 7 concurrent audio banks.\n\nContinue anyway?",
-                    "Continue", "Cancel", MessageDialogKind.Warning))
-                    return;
-            }
 
             var vm = serviceProvider.GetRequiredService<GenerateResourceViewModel>();
             vm.ResourceName = Project.ProjectName.ToLower().Replace(" ", "_");

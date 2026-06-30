@@ -4,18 +4,11 @@ namespace SirenSharp.Services.Backends.Native
 {
     /// <summary>
     /// Experimental AWC backend that writes the binary itself (see <see cref="NativeAwcWriter"/>)
-    /// with no CodeWalker dependency for the encode. Verification still uses the shared
-    /// verifier for now. Marked experimental until validated against known-good banks in-game.
+    /// and verifies it with <see cref="NativeAwcValidator"/> - no CodeWalker dependency on
+    /// either the encode or the verify path. Marked experimental pending wider in-game use.
     /// </summary>
     public sealed class NativeAwcBuildBackend : IAwcBuildBackend
     {
-        private readonly AwcVerifier awcVerifier;
-
-        public NativeAwcBuildBackend(AwcVerifier awcVerifier)
-        {
-            this.awcVerifier = awcVerifier;
-        }
-
         public string Name => "Native";
 
         public bool IsExperimental => true;
@@ -27,7 +20,7 @@ namespace SirenSharp.Services.Backends.Native
                 var waves = new List<NativeAwcWriter.Wave>();
                 foreach (var sound in soundSet.Sounds)
                 {
-                    var wavPath = Path.Combine(preparedWavDirectory, sound.FileName);
+                    var wavPath = Path.Combine(preparedWavDirectory, sound.PreparedFileName);
                     var (rate, pcm) = ReadMonoPcm16(File.ReadAllBytes(wavPath), sound.Name);
                     waves.Add(new NativeAwcWriter.Wave
                     {
@@ -56,7 +49,7 @@ namespace SirenSharp.Services.Backends.Native
         }
 
         public AwcVerificationResult Verify(string soundSetName, string awcFilePath)
-            => awcVerifier.Verify(soundSetName, awcFilePath);
+            => NativeAwcValidator.Verify(soundSetName, awcFilePath);
 
         // Minimal RIFF/WAVE reader for the sanitized mono 16-bit PCM the pipeline produces.
         private static (ushort sampleRate, byte[] pcm) ReadMonoPcm16(byte[] wav, string name)

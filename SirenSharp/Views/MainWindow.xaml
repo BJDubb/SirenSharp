@@ -93,7 +93,7 @@
                     <TextBlock Text="Welcome to SirenSharp" FontSize="24" FontWeight="SemiBold"
                                HorizontalAlignment="Center" Margin="0,12,0,0"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                    <TextBlock Text="Build server-sided siren packs for FiveM from your WAV files."
+                    <TextBlock Text="Build server-sided siren packs for FiveM from your audio files."
                                TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,20"
                                Style="{StaticResource MutedText}" />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -175,7 +175,7 @@
                         <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
                             <StackPanel>
                                 <TextBlock Text="Sirens" Style="{StaticResource SectionHeaderText}" Margin="0" />
-                                <TextBlock Text="Drag &amp; drop WAV files anywhere here, or use Import."
+                                <TextBlock Text="Drag &amp; drop audio (WAV, MP3, OGG) anywhere here, or use Import."
                                            Style="{StaticResource MutedText}" FontSize="12" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
@@ -193,7 +193,7 @@
 
                         <Grid>
                             <!-- Empty hint when soundset has no sirens -->
-                            <TextBlock Text="No sirens yet - drop WAV files here or click Import WAV."
+                            <TextBlock Text="No sirens yet - drop audio files here or click Import."
                                        Style="{StaticResource MutedText}" TextAlignment="Center" TextWrapping="Wrap"
                                        VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="320"
                                        Visibility="{Binding CurrentSoundSet.Sounds.Count, Converter={StaticResource countToVis}, ConverterParameter=invert}" />
@@ -328,6 +328,21 @@
                                                Command="{Binding FixSirenAudioCommand}" />
                                 </StackPanel>
                             </Border>
+
+                            <Grid Margin="0,16,0,4">
+                                <TextBlock Text="Trim" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" />
+                                <TextBlock HorizontalAlignment="Right" FontSize="11" Style="{StaticResource MutedText}"
+                                           Visibility="{Binding CurrentSiren.IsTrimmed, Converter={StaticResource boolToVis}}"
+                                           Text="{Binding CurrentSiren.TrimDisplayText, Mode=OneWay}" />
+                            </Grid>
+                            <views:WaveformTrimControl
+                                AudioPath="{Binding CurrentSiren.AudioPath}"
+                                DurationSeconds="{Binding CurrentSiren.LengthSeconds}"
+                                TrimStartSeconds="{Binding CurrentSiren.TrimStartSeconds, Mode=TwoWay}"
+                                TrimEndSeconds="{Binding CurrentSiren.TrimEndSeconds, Mode=TwoWay}" />
+                            <ui:Button Content="Reset trim" Icon="{ui:SymbolIcon ArrowReset24}" Appearance="Secondary"
+                                       HorizontalAlignment="Left" Margin="0,6,0,0" Click="OnResetTrim"
+                                       Visibility="{Binding CurrentSiren.IsTrimmed, Converter={StaticResource boolToVis}}" />
 
                             <TextBlock Text="Preview" Style="{StaticResource FieldLabel}" Margin="0,16,0,4" />
                             <StackPanel Orientation="Horizontal">

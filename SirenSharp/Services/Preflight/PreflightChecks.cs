@@ -33,6 +33,26 @@ namespace SirenSharp.Services.Preflight
                     DiagnosticCodes.AwcDuplicateName,
                     name);
             }
+
+            // The game identifies wavepacks (AWCs) by the first 8 characters of the name only
+            // (RAGE truncates them; see FiveM's PatchAudioWavePackOverlay 8-char match). Two AWCs
+            // whose names match in the first 8 chars resolve to the same bank, so only one loads
+            // and the other plays silent in-game - even though both names look distinct here.
+            var prefixCollisions = project.SoundSets
+                .Where(s => !string.IsNullOrEmpty(s.Name))
+                .GroupBy(s => s.Name.ToLowerInvariant().Substring(0, Math.Min(8, s.Name.Length)))
+                .Where(g => g.Select(s => s.Name).Distinct().Count() > 1);
+
+            foreach (var group in prefixCollisions)
+            {
+                var names = string.Join(", ", group.Select(s => s.Name).Distinct());
+                yield return new Diagnostic(
+                    DiagnosticSeverity.Warning,
+                    $"AWCs {names} share the same first 8 characters ('{group.Key}'). The game uses only the first 8 characters to identify a wavepack, so these resolve to the same bank - only one will load and the others will be silent in-game.",
+                    DiagnosticCodes.AwcNameCollision,
+                    group.Key,
+                    "Make the first 8 characters of each AWC name unique.");
+            }
         }
     }
 

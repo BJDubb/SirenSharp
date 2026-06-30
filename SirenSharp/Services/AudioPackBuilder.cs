@@ -44,8 +44,9 @@ namespace SirenSharp.Services
 
                 foreach (var sound in soundSet.Sounds)
                 {
-                    var destPath = Path.Combine(awcDir.FullName, sound.FileName);
-                    var sanitize = wavSanitizer.Sanitize(sound.AudioPath, destPath);
+                    var destPath = Path.Combine(awcDir.FullName, sound.PreparedFileName);
+                    var sanitize = wavSanitizer.Sanitize(
+                        sound.AudioPath, destPath, sound.TrimStartSeconds, sound.TrimEndSeconds);
 
                     if (!sanitize.Success)
                     {

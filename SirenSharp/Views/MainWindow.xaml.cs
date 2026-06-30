@@ -27,12 +27,21 @@ namespace SirenSharp.Views
             e.Handled = true;
         }
 
+        private void OnResetTrim(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel?.CurrentSiren is { } siren)
+            {
+                siren.TrimStartSeconds = 0;
+                siren.TrimEndSeconds = 0;
+            }
+        }
+
         private void OnDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetData(DataFormats.FileDrop) is not string[] files) return;
-            var wavFiles = files.Where(f => f.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)).ToArray();
-            if (wavFiles.Length == 0) return;
-            ViewModel?.ImportWavFiles(wavFiles);
+            var audioFiles = files.Where(SirenSharp.Services.AudioReaderFactory.IsSupported).ToArray();
+            if (audioFiles.Length == 0) return;
+            ViewModel?.ImportWavFiles(audioFiles);
         }
     }
 }

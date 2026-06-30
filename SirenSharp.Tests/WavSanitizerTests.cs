@@ -1,3 +1,4 @@
+using NAudio.Wave;
 using SirenSharp.Services;
 using Xunit;
 
@@ -56,6 +57,37 @@ namespace SirenSharp.Tests
 
             Assert.True(analyzer.TryAnalyze(output, out var info, out _));
             Assert.True(info!.IsCompatible);
+        }
+
+        [Fact]
+        public void Trim_CutsToInAndOutPoints()
+        {
+            using var dir = new TempDir();
+            var input = WavFixtures.MonoPcm16(dir.File("two.wav"), seconds: 2.0);
+            var output = dir.File("out.wav");
+
+            var result = sanitizer.Sanitize(input, output, trimStartSeconds: 0.5, trimEndSeconds: 1.5);
+
+            Assert.True(result.Success, result.Error);
+            Assert.True(result.WasConverted);
+            Assert.Contains(result.Changes, c => c.Contains("trimmed"));
+
+            using var reader = new WaveFileReader(output);
+            Assert.InRange(reader.TotalTime.TotalSeconds, 0.95, 1.05);
+        }
+
+        [Fact]
+        public void Trim_StartOnly_KeepsRemainderToEnd()
+        {
+            using var dir = new TempDir();
+            var input = WavFixtures.MonoPcm16(dir.File("two.wav"), seconds: 2.0);
+            var output = dir.File("out.wav");
+
+            var result = sanitizer.Sanitize(input, output, trimStartSeconds: 0.5);
+
+            Assert.True(result.Success, result.Error);
+            using var reader = new WaveFileReader(output);
+            Assert.InRange(reader.TotalTime.TotalSeconds, 1.45, 1.55);
         }
 
         [Fact]
